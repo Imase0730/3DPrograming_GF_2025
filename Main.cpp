@@ -53,6 +53,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     // キーボードの作成
     std::unique_ptr<Keyboard> keyboard = std::make_unique<Keyboard>();
 
+    // マウスの作成
+    std::unique_ptr<Mouse> mouse = std::make_unique<Mouse>();
+
     g_game = std::make_unique<Game>();
 
     // Register class and create window
@@ -93,6 +96,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         // TODO: Change nCmdShow to SW_SHOWMAXIMIZED to default to fullscreen.
 
         GetClientRect(hwnd, &rc);
+
+        // マウスにウインドウハンドルを設定する
+        mouse->SetWindow(hwnd);
 
         g_game->Initialize(hwnd, rc.right - rc.left, rc.bottom - rc.top);
     }
@@ -216,7 +222,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_ACTIVATEAPP:
         
         Keyboard::ProcessMessage(message, wParam, lParam);
-        
+        Mouse::ProcessMessage(message, wParam, lParam);
+
         if (game)
         {
             if (wParam)
@@ -299,12 +306,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     case WM_ACTIVATE:
         Keyboard::ProcessMessage(message, wParam, lParam);
+        Mouse::ProcessMessage(message, wParam, lParam);
         break;
 
     case WM_KEYDOWN:
     case WM_KEYUP:
     case WM_SYSKEYUP:
         Keyboard::ProcessMessage(message, wParam, lParam);
+        break;
+
+    case WM_INPUT:
+    case WM_MOUSEMOVE:
+    case WM_LBUTTONDOWN:
+    case WM_LBUTTONUP:
+    case WM_RBUTTONDOWN:
+    case WM_RBUTTONUP:
+    case WM_MBUTTONDOWN:
+    case WM_MBUTTONUP:
+    case WM_MOUSEWHEEL:
+    case WM_XBUTTONDOWN:
+    case WM_XBUTTONUP:
+    case WM_MOUSEHOVER:
+        Mouse::ProcessMessage(message, wParam, lParam);
         break;
 
     default:
