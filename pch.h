@@ -92,5 +92,12 @@ namespace DX
 #include "SpriteFont.h"
 #include "CommonStates.h"
 #include "Effects.h"
+#include "PrimitiveBatch.h"
+#include "VertexTypes.h"
+#include "DirectXHelpers.h"
+#include "GeometricPrimitive.h"
+
+// DirectXTK_Unitilites
+#include "DirectXTK_Utilities/DebugDraw.h"
 
 

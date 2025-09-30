@@ -10,6 +10,8 @@
 #include <memory>
 
 #include "ImaseLib/DebugFont.h"
+#include "ImaseLib/DebugCamera.h"
+#include "ImaseLib/GridFloor.h"
 
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.
@@ -66,10 +68,22 @@ private:
 
 private:
 
+    // 射影行列
+    DirectX::SimpleMath::Matrix m_proj;
+
     // コモンステート
     std::unique_ptr<DirectX::CommonStates> m_states;
 
     // デバッグフォント
     std::unique_ptr<Imase::DebugFont> m_debugFont;
+
+    // デバッグカメラ
+    std::unique_ptr<Imase::DebugCamera> m_debugCamera;
+
+    // グリッドの床
+    std::unique_ptr<Imase::GridFloor> m_gridFloor;
+
+    // ティーポット
+    std::unique_ptr<DirectX::GeometricPrimitive> m_teapot;
 
 };

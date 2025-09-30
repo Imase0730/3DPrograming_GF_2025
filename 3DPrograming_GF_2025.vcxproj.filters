@@ -11,6 +11,9 @@
     <Filter Include="ImaseLib">
       <UniqueIdentifier>{9a27a576-f22f-40e7-bf35-3752bea148a1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="DirectXTK_Utilities">
+      <UniqueIdentifier>{c0a08f57-47f9-47cd-8367-05501104e4d8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -24,6 +27,15 @@
     <ClInclude Include="ImaseLib\DebugFont.h">
       <Filter>ImaseLib</Filter>
     </ClInclude>
+    <ClInclude Include="ImaseLib\DebugCamera.h">
+      <Filter>ImaseLib</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaseLib\GridFloor.h">
+      <Filter>ImaseLib</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXTK_Utilities\DebugDraw.h">
+      <Filter>DirectXTK_Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -34,6 +46,15 @@
     </ClCompile>
     <ClCompile Include="ImaseLib\DebugFont.cpp">
       <Filter>ImaseLib</Filter>
+    </ClCompile>
+    <ClCompile Include="ImaseLib\DebugCamera.cpp">
+      <Filter>ImaseLib</Filter>
+    </ClCompile>
+    <ClCompile Include="ImaseLib\GridFloor.cpp">
+      <Filter>ImaseLib</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectXTK_Utilities\DebugDraw.cpp">
+      <Filter>DirectXTK_Utilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
