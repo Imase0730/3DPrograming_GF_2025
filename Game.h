@@ -86,4 +86,7 @@ private:
     // ティーポット
     std::unique_ptr<DirectX::GeometricPrimitive> m_teapot;
 
+    // サイコロのモデル
+    std::unique_ptr<DirectX::Model> m_dice;
+
 };

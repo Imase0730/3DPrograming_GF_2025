@@ -96,6 +96,7 @@ namespace DX
 #include "VertexTypes.h"
 #include "DirectXHelpers.h"
 #include "GeometricPrimitive.h"
+#include "Model.h"
 
 // DirectXTK_Unitilites
 #include "DirectXTK_Utilities/DebugDraw.h"

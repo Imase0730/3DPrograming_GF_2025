@@ -94,7 +94,10 @@ void Game::Render()
 
     // ティーポットの描画
     SimpleMath::Matrix world;
-    m_teapot->Draw(world, view, m_proj);
+    //m_teapot->Draw(world, view, m_proj);
+
+    // サイコロの描画
+    m_dice->Draw(context, *m_states.get(), world, view, m_proj);
 
     // デバッグフォントの描画
     m_debugFont->Render(m_states.get());
@@ -204,6 +207,11 @@ void Game::CreateDeviceDependentResources()
 
     // ティーポットの作成
     m_teapot = GeometricPrimitive::CreateTeapot(context);
+
+    // サイコロの作成
+    EffectFactory fx(device);
+    fx.SetDirectory(L"Resources/Models");
+    m_dice = Model::CreateFromCMO(device, L"Resources/Models/Dice.cmo", fx);
 
 }
 

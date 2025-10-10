@@ -14,6 +14,9 @@
     <Filter Include="DirectXTK_Utilities">
       <UniqueIdentifier>{c0a08f57-47f9-47cd-8367-05501104e4d8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Models">
+      <UniqueIdentifier>{678ffaad-87ad-415d-9194-e0fffb7189ec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -72,5 +75,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <MeshContentTask Include="Models\Dice.obj">
+      <Filter>Models</Filter>
+    </MeshContentTask>
   </ItemGroup>
 </Project>
