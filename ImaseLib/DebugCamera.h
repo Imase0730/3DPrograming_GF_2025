@@ -61,8 +61,8 @@ namespace Imase
 		/// <summary>
 		/// デバッグカメラの更新
 		/// </summary>
-		/// <param name="mouse">マウスオブジェクトへのポインタ</param>
-		void Update();
+		/// <param name="isActive">trueの場合アクティブ化</param>
+		void Update(bool isActive = true);
 
 		/// <summary>
 		/// デバッグカメラのビュー行列の取得関数

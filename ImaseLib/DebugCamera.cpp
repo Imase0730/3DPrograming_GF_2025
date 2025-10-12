@@ -30,7 +30,7 @@ DebugCamera::DebugCamera(int windowWidth, int windowHeight)
 //--------------------------------------------------------------------------------------
 // 更新
 //--------------------------------------------------------------------------------------
-void DebugCamera::Update()
+void DebugCamera::Update(bool isActive)
 {
 	auto state = Mouse::Get().GetState();
 
@@ -60,7 +60,7 @@ void DebugCamera::Update()
 
 	// マウスのフォイール値を取得
 	m_scrollWheelValue = state.scrollWheelValue;
-	if (m_scrollWheelValue > 0)
+	if (isActive && m_scrollWheelValue > 0)
 	{
 		m_scrollWheelValue = 0;
 		Mouse::Get().ResetScrollWheelValue();

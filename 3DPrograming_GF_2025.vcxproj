@@ -219,7 +219,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <MeshContentTask Include="Models\Dice.obj" />
+    <MeshContentTask Include="Models\Dice.obj">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </MeshContentTask>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
