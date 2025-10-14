@@ -83,10 +83,13 @@ private:
     // グリッドの床
     std::unique_ptr<Imase::GridFloor> m_gridFloor;
 
-    // ティーポット
-    std::unique_ptr<DirectX::GeometricPrimitive> m_teapot;
-
     // サイコロのモデル
     std::unique_ptr<DirectX::Model> m_dice;
+
+    // サイコロの位置
+    DirectX::SimpleMath::Vector3 m_dicePosition;
+
+    // サイコロのY軸の回転角度（度数）
+    float m_diceRotateY;
 
 };

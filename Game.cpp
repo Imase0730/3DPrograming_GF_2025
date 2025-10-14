@@ -12,6 +12,7 @@ using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
 Game::Game() noexcept(false)
+    : m_diceRotateY{ 0.0f }
 {
     m_deviceResources = std::make_unique<DX::DeviceResources>();
     // TODO: Provide parameters for swapchain format, depth/stencil format, and backbuffer count.
@@ -61,8 +62,25 @@ void Game::Update(DX::StepTimer const& timer)
     float elapsedTime = float(timer.GetElapsedSeconds());
 
     // TODO: Add your game logic here.
-    elapsedTime;
-    
+
+    // １秒間で９０度回転する
+    m_diceRotateY += 90.0f * elapsedTime;
+
+    // キー情報を取得
+    auto kb = Keyboard::Get().GetState();
+
+    // 右キーが押された
+    if (kb.Right)
+    {
+        m_dicePosition.x += 1.0f * elapsedTime;
+    }
+
+    // 左キーが押された
+    if (kb.Left)
+    {
+        m_dicePosition.x -= 1.0f * elapsedTime;
+    }
+
     // デバッグカメラの更新
     m_debugCamera->Update();
 }
@@ -92,9 +110,16 @@ void Game::Render()
     // グリッドの床の描画
     m_gridFloor->Render(context, view, m_proj);
 
-    // ティーポットの描画
+    // ワールド行列
     SimpleMath::Matrix world;
-    //m_teapot->Draw(world, view, m_proj);
+
+    // 平行移動行列を作成
+    SimpleMath::Matrix trans = SimpleMath::Matrix::CreateTranslation(m_dicePosition);
+
+    // 回転行列を作成
+    SimpleMath::Matrix rotY = SimpleMath::Matrix::CreateRotationY(XMConvertToRadians(m_diceRotateY));
+
+    world = rotY * trans;
 
     // サイコロの描画
     m_dice->Draw(context, *m_states.get(), world, view, m_proj);
@@ -204,9 +229,6 @@ void Game::CreateDeviceDependentResources()
     // グリッドの床の作成
     m_gridFloor = std::make_unique<Imase::GridFloor>(
         device, context, m_states.get());
-
-    // ティーポットの作成
-    m_teapot = GeometricPrimitive::CreateTeapot(context);
 
     // サイコロの作成
     EffectFactory fx(device);
