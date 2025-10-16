@@ -9,7 +9,7 @@
 // 組み込み方：
 //	１・pch.hに【 DirectXTK_ImGui.h 】をインクルードする。
 //	２・Main.cppのWndProc関数の先頭に【 DXTK_ImGui::ProcessMessage(hWnd, message, wParam, lParam); 】を追加する。
-//	３・Main.cppのwWinMain関数のg_game.reset()の直前と、Game.cppのOnDeviceLost関数に【 DXTK_ImGui::Reset(); 】を追加する。
+//	３・Main.cppのwWinMain関数のg_game.reset()の直前に【 DXTK_ImGui::Reset(); 】を追加する。
 //	４・Game.cppのCreateDeviceDependentResources関数に【 DXTK_ImGui::Initialize(m_deviceResources->GetWindow(), m_deviceResources->GetD3DDevice(), m_deviceResources->GetD3DDeviceContext()); 】を追加する。
 //	５・Game.cppのUpdate関数に【 DXTK_ImGui::Update(); 】を追加する。
 //	６・Game.cppのRender関数のm_deviceResources->PIXEndEvent();の直前に【 DXTK_ImGui::Render(); 】を追加する。
@@ -42,7 +42,7 @@ namespace Imase
 	private:
 
 		// インスタンスへのポインタ
-		static std::unique_ptr<DXTK_ImGui> m_instance;
+		static DXTK_ImGui* m_instance;
 
 		// コンストラクタ
 		DXTK_ImGui(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* context);
@@ -54,13 +54,7 @@ namespace Imase
 	public:
 
 		// デストラクタ
-		~DXTK_ImGui();
-
-		// インスタンス取得関数
-		static DXTK_ImGui& GetInstance()
-		{
-			return *m_instance;
-		}
+		virtual ~DXTK_ImGui();
 
 		// 初期化関数
 		static void Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* context);

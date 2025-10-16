@@ -7,9 +7,8 @@
 // Author: Hideyasu Imase
 //--------------------------------------------------------------------------------------
 #include "pch.h"
-#include "DirectXTK_ImGui.h"
 
-std::unique_ptr<Imase::DXTK_ImGui> Imase::DXTK_ImGui::m_instance = nullptr;
+Imase::DXTK_ImGui* Imase::DXTK_ImGui::m_instance = nullptr;
 
 // コンストラクタ
 Imase::DXTK_ImGui::DXTK_ImGui(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* context)
@@ -41,13 +40,14 @@ Imase::DXTK_ImGui::~DXTK_ImGui()
 // 初期化関数
 void Imase::DXTK_ImGui::Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* context)
 {
-    m_instance.reset(new DXTK_ImGui{ hWnd, device, context });
+    if (m_instance) delete m_instance;
+    m_instance = new DXTK_ImGui(hWnd, device, context);
 }
 
 // リセット関数
 void Imase::DXTK_ImGui::Reset()
 {
-    m_instance.reset();
+    if (m_instance) delete m_instance;
 }
 
 // 更新処理
@@ -59,7 +59,7 @@ void Imase::DXTK_ImGui::Update()
     ImGui::NewFrame();
 
     //  デモウィンドウの描画
-//    ImGui::ShowDemoWindow();
+    ImGui::ShowDemoWindow();
 }
 
 // 描画処理
@@ -75,8 +75,7 @@ bool Imase::DXTK_ImGui::ProcessMessage(HWND hWnd, UINT message, WPARAM wParam, L
 {
     //  ImGuiのメッセージ処理
     extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
-        return true;
+    if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam)) return true;
 
     return false;
 }

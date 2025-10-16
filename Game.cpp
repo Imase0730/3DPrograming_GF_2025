@@ -286,10 +286,6 @@ void Game::CreateWindowSizeDependentResources()
 void Game::OnDeviceLost()
 {
     // TODO: Add Direct3D resource cleanup here.
-#ifdef _DEBUG
-    // ImGui‚ðƒŠƒZƒbƒg‚·‚é
-    Imase::DXTK_ImGui::Reset();
-#endif // _DEBUG
 }
 
 void Game::OnDeviceRestored()
