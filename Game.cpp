@@ -63,8 +63,8 @@ void Game::Update(DX::StepTimer const& timer)
 
     // TODO: Add your game logic here.
 
-    // １秒間で９０度回転する
-    m_diceRotateY += 90.0f * elapsedTime;
+    // １秒間で４５度回転する
+    m_diceRotateY += 45.0f * elapsedTime;
 
     // キー情報を取得
     auto kb = Keyboard::Get().GetState();
@@ -80,6 +80,11 @@ void Game::Update(DX::StepTimer const& timer)
     {
         m_dicePosition.x -= 1.0f * elapsedTime;
     }
+
+#ifdef _DEBUG
+    // ImGuiの更新処理
+    Imase::DXTK_ImGui::Update();
+#endif // _DEBUG
 
     // デバッグカメラの更新
     m_debugCamera->Update();
@@ -111,21 +116,39 @@ void Game::Render()
     m_gridFloor->Render(context, view, m_proj);
 
     // ワールド行列
-    SimpleMath::Matrix world;
+    SimpleMath::Matrix world_1, world_2, world_3;
 
-    // 平行移動行列を作成
-    SimpleMath::Matrix trans = SimpleMath::Matrix::CreateTranslation(m_dicePosition);
+    // 平行移動行列を作成（２，０，０に移動する関数）
+    SimpleMath::Matrix trans = SimpleMath::Matrix::CreateTranslation(2.0f, 0.0f, 0.0f);
 
-    // 回転行列を作成
-    SimpleMath::Matrix rotY = SimpleMath::Matrix::CreateRotationY(XMConvertToRadians(m_diceRotateY));
+    // 回転行列を作成（１秒間にY軸を中心に４５度回転する行列）
+    SimpleMath::Matrix rotateY = SimpleMath::Matrix::CreateRotationY(XMConvertToRadians(m_diceRotateY));
 
-    world = rotY * trans;
+    // 拡大縮小行列を作成（原点を中心に大きさを半分にする行列）
+    SimpleMath::Matrix scale = SimpleMath::Matrix::CreateScale(0.5f);
+
+    world_1 = rotateY;
 
     // サイコロの描画
-    m_dice->Draw(context, *m_states.get(), world, view, m_proj);
+    m_dice->Draw(context, *m_states.get(), world_1, view, m_proj);
+
+    world_2 = scale * rotateY * trans * world_1;
+
+    // サイコロの描画
+    m_dice->Draw(context, *m_states.get(), world_2, view, m_proj);
+
+    world_3 = scale * rotateY * trans * world_2;
+
+    // サイコロの描画
+    m_dice->Draw(context, *m_states.get(), world_3, view, m_proj);
 
     // デバッグフォントの描画
     m_debugFont->Render(m_states.get());
+
+#ifdef _DEBUG
+    // ImGuiの描画処理
+    Imase::DXTK_ImGui::Render();
+#endif // _DEBUG
 
     m_deviceResources->PIXEndEvent();
 
@@ -219,6 +242,11 @@ void Game::CreateDeviceDependentResources()
     // TODO: Initialize device dependent objects here (independent of window size).
     device;
 
+#ifdef _DEBUG
+    // ImuGuiの初期化
+    Imase::DXTK_ImGui::Initialize(m_deviceResources->GetWindow(), device, context);
+#endif // _DEBUG
+
     // コモンステートの作成
     m_states = std::make_unique<CommonStates>(device);
 
@@ -258,6 +286,10 @@ void Game::CreateWindowSizeDependentResources()
 void Game::OnDeviceLost()
 {
     // TODO: Add Direct3D resource cleanup here.
+#ifdef _DEBUG
+    // ImGuiをリセットする
+    Imase::DXTK_ImGui::Reset();
+#endif // _DEBUG
 }
 
 void Game::OnDeviceRestored()

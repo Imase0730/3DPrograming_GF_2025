@@ -101,4 +101,10 @@ namespace DX
 // DirectXTK_Unitilites
 #include "DirectXTK_Utilities/DebugDraw.h"
 
+#ifdef _DEBUG
+// ImGui
+#include "ImaseLib/DirectXTK_ImGui.h"
+#endif // _DEBUG
+
+
 

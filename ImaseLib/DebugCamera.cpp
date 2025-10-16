@@ -53,14 +53,14 @@ void DebugCamera::Update(bool isActive)
 		m_yAngle = m_yTmp;
 	}
 	// マウスのボタンが押されていたらカメラを移動させる
-	if (state.leftButton)
+	if (isActive && state.leftButton)
 	{
 		Motion(state.x, state.y);
 	}
 
 	// マウスのフォイール値を取得
 	m_scrollWheelValue = state.scrollWheelValue;
-	if (isActive && m_scrollWheelValue > 0)
+	if (m_scrollWheelValue > 0)
 	{
 		m_scrollWheelValue = 0;
 		Mouse::Get().ResetScrollWheelValue();

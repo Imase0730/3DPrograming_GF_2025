@@ -118,6 +118,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         }
     }
 
+#ifdef _DEBUG
+    // ImGuiをリセットする
+    Imase::DXTK_ImGui::Reset();
+#endif // _DEBUG
+
     g_game.reset();
 
     return static_cast<int>(msg.wParam);
@@ -131,6 +136,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     static bool s_minimized = false;
     static bool s_fullscreen = false;
     // TODO: Set s_fullscreen to true if defaulting to fullscreen.
+
+#ifdef _DEBUG
+    // ImGuiのメッセージ処理
+    Imase::DXTK_ImGui::ProcessMessage(hWnd, message, wParam, lParam);
+#endif // DEBUG
 
     auto game = reinterpret_cast<Game*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 
