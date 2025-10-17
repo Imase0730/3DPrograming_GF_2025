@@ -18,6 +18,8 @@ void Imase::DXTK_ImGui::Initialize(HWND hWnd, ID3D11Device* device, ID3D11Device
     // リセット処理
     Imase::DXTK_ImGui::Reset();
 
+    m_isInitialized = true;
+
     //  バージョンの確認
     IMGUI_CHECKVERSION();
 
