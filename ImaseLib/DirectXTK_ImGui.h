@@ -41,21 +41,10 @@ namespace Imase
 	{
 	private:
 
-		// インスタンスへのポインタ
-		static DXTK_ImGui* m_instance;
-
-		// コンストラクタ
-		DXTK_ImGui(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* context);
-
-		// コピーや代入を禁止
-		DXTK_ImGui(const DXTK_ImGui&) = delete;
-		DXTK_ImGui& operator=(const DXTK_ImGui&) = delete;
+		// trueの場合は初期化済み
+		static bool m_isInitialized;
 
 	public:
-
-		// デストラクタ
-		virtual ~DXTK_ImGui();
-
 		// 初期化関数
 		static void Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* context);
 

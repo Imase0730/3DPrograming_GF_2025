@@ -8,11 +8,14 @@
 //--------------------------------------------------------------------------------------
 #include "pch.h"
 
-Imase::DXTK_ImGui* Imase::DXTK_ImGui::m_instance = nullptr;
+bool Imase::DXTK_ImGui::m_isInitialized = false;
 
-// コンストラクタ
-Imase::DXTK_ImGui::DXTK_ImGui(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* context)
+// 初期化関数
+void Imase::DXTK_ImGui::Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* context)
 {
+    // リセット処理
+    Imase::DXTK_ImGui::Reset();
+
     //  バージョンの確認
     IMGUI_CHECKVERSION();
 
@@ -29,25 +32,17 @@ Imase::DXTK_ImGui::DXTK_ImGui(HWND hWnd, ID3D11Device* device, ID3D11DeviceConte
     ImGui_ImplDX11_Init(device, context);
 }
 
-// デストラクタ
-Imase::DXTK_ImGui::~DXTK_ImGui()
-{
-    ImGui_ImplDX11_Shutdown();
-    ImGui_ImplWin32_Shutdown();
-    ImGui::DestroyContext();
-}
-
-// 初期化関数
-void Imase::DXTK_ImGui::Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* context)
-{
-    if (m_instance) delete m_instance;
-    m_instance = new DXTK_ImGui(hWnd, device, context);
-}
-
 // リセット関数
 void Imase::DXTK_ImGui::Reset()
 {
-    if (m_instance) delete m_instance;
+    if (m_isInitialized)
+    {
+        m_isInitialized = false;
+
+        ImGui_ImplDX11_Shutdown();
+        ImGui_ImplWin32_Shutdown();
+        ImGui::DestroyContext();
+    }
 }
 
 // 更新処理
