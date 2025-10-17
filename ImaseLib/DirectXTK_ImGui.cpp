@@ -8,6 +8,8 @@
 //--------------------------------------------------------------------------------------
 #include "pch.h"
 
+#include "DirectXTK_ImGui.h"
+
 bool Imase::DXTK_ImGui::m_isInitialized = false;
 
 // ‰Šú‰»ŠÖ”
