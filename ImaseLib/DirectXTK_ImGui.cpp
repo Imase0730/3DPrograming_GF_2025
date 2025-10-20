@@ -58,7 +58,7 @@ void Imase::DXTK_ImGui::Update()
     ImGui::NewFrame();
 
     //  デモウィンドウの描画
-    ImGui::ShowDemoWindow();
+//    ImGui::ShowDemoWindow();
 }
 
 // 描画処理

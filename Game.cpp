@@ -82,12 +82,38 @@ void Game::Update(DX::StepTimer const& timer)
     }
 
 #ifdef _DEBUG
+    // Debug
+
     // ImGuiの更新処理
     Imase::DXTK_ImGui::Update();
-#endif // _DEBUG
+
+    ImGui::Begin("Window Tile");
+
+    // ----- ImGuiのウインドウに項目を追加する ----- //
+
+    // サイコロの位置をfloat型の配列にコピーする
+    float v[3] = { m_dicePosition.x, m_dicePosition.y, m_dicePosition.z };
+
+    ImGui::DragFloat3("Position", v, 0.05f);
+
+    // ImGuiで設定された値をコピーする
+    m_dicePosition = SimpleMath::Vector3{ v[0], v[1], v[2] };
+
+    // --------------------------------------------- //
+
+    // デバッグカメラの更新
+    m_debugCamera->Update(!ImGui::IsWindowFocused());
+
+    ImGui::End();
+
+#else
+    // Release
 
     // デバッグカメラの更新
     m_debugCamera->Update();
+
+#endif // _DEBUG
+
 }
 #pragma endregion
 
@@ -127,7 +153,10 @@ void Game::Render()
     // 拡大縮小行列を作成（原点を中心に大きさを半分にする行列）
     SimpleMath::Matrix scale = SimpleMath::Matrix::CreateScale(0.5f);
 
-    world_1 = rotateY;
+    // 平行移動する行列を作成する
+    SimpleMath::Matrix world = SimpleMath::Matrix::CreateTranslation(m_dicePosition);
+
+    world_1 = rotateY * world;
 
     // サイコロの描画
     m_dice->Draw(context, *m_states.get(), world_1, view, m_proj);
