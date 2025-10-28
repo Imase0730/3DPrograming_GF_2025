@@ -12,7 +12,6 @@ using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
 Game::Game() noexcept(false)
-    : m_diceRotateY{ 0.0f }
 {
     m_deviceResources = std::make_unique<DX::DeviceResources>();
     // TODO: Provide parameters for swapchain format, depth/stencil format, and backbuffer count.
@@ -39,6 +38,10 @@ void Game::Initialize(HWND window, int width, int height)
     m_timer.SetTargetElapsedSeconds(1.0 / 60);
     */
 
+    // Fontの変更
+    ImGuiIO& io = ImGui::GetIO();
+    io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/ARIAL.ttf", 24.0f);
+
     // デバッグカメラの作成
     m_debugCamera = std::make_unique<Imase::DebugCamera>(width, height);
 
@@ -63,23 +66,8 @@ void Game::Update(DX::StepTimer const& timer)
 
     // TODO: Add your game logic here.
 
-    // １秒間で４５度回転する
-    m_diceRotateY += 45.0f * elapsedTime;
-
     // キー情報を取得
     auto kb = Keyboard::Get().GetState();
-
-    // 右キーが押された
-    if (kb.Right)
-    {
-        m_dicePosition.x += 1.0f * elapsedTime;
-    }
-
-    // 左キーが押された
-    if (kb.Left)
-    {
-        m_dicePosition.x -= 1.0f * elapsedTime;
-    }
 
 #ifdef _DEBUG
     // Debug
@@ -87,17 +75,15 @@ void Game::Update(DX::StepTimer const& timer)
     // ImGuiの更新処理
     Imase::DXTK_ImGui::Update();
 
-    ImGui::Begin("Window Tile");
+    ImGui::Begin("GimbalLock(YXZ)");
 
     // ----- ImGuiのウインドウに項目を追加する ----- //
 
-    // サイコロの位置をfloat型の配列にコピーする
-    float v[3] = { m_dicePosition.x, m_dicePosition.y, m_dicePosition.z };
+    float v[3] = { m_rotate.x, m_rotate.y, m_rotate.z };
 
-    ImGui::DragFloat3("Position", v, 0.05f);
+    ImGui::DragFloat3("Rotate", v , 1.0f);
 
-    // ImGuiで設定された値をコピーする
-    m_dicePosition = SimpleMath::Vector3{ v[0], v[1], v[2] };
+    m_rotate = SimpleMath::Vector3{ v[0], v[1], v[2] };
 
     // --------------------------------------------- //
 
@@ -141,35 +127,23 @@ void Game::Render()
     // グリッドの床の描画
     m_gridFloor->Render(context, view, m_proj);
 
-    // ワールド行列
-    SimpleMath::Matrix world_1, world_2, world_3;
+    SimpleMath::Matrix world;
 
-    // 平行移動行列を作成（２，０，０に移動する関数）
-    SimpleMath::Matrix trans = SimpleMath::Matrix::CreateTranslation(2.0f, 0.0f, 0.0f);
+    // 各軸に対する回転行列を作成する
+    SimpleMath::Matrix rotX =
+        SimpleMath::Matrix::CreateRotationX(XMConvertToRadians(m_rotate.x));
+    SimpleMath::Matrix rotY =
+        SimpleMath::Matrix::CreateRotationY(XMConvertToRadians(m_rotate.y));
+    SimpleMath::Matrix rotZ =
+        SimpleMath::Matrix::CreateRotationZ(XMConvertToRadians(m_rotate.z));
 
-    // 回転行列を作成（１秒間にY軸を中心に４５度回転する行列）
-    SimpleMath::Matrix rotateY = SimpleMath::Matrix::CreateRotationY(XMConvertToRadians(m_diceRotateY));
+    // 各軸の描画
+    m_ringY->Draw(context, *m_states.get(), rotY, view, m_proj);
+    m_ringX->Draw(context, *m_states.get(), rotX * rotY, view, m_proj);
+    m_ringZ->Draw(context, *m_states.get(), rotZ * rotX * rotY, view, m_proj);
 
-    // 拡大縮小行列を作成（原点を中心に大きさを半分にする行列）
-    SimpleMath::Matrix scale = SimpleMath::Matrix::CreateScale(0.5f);
-
-    // 平行移動する行列を作成する
-    SimpleMath::Matrix world = SimpleMath::Matrix::CreateTranslation(m_dicePosition);
-
-    world_1 = rotateY * world;
-
-    // サイコロの描画
-    m_dice->Draw(context, *m_states.get(), world_1, view, m_proj);
-
-    world_2 = scale * rotateY * trans * world_1;
-
-    // サイコロの描画
-    m_dice->Draw(context, *m_states.get(), world_2, view, m_proj);
-
-    world_3 = scale * rotateY * trans * world_2;
-
-    // サイコロの描画
-    m_dice->Draw(context, *m_states.get(), world_3, view, m_proj);
+    // 飛行機のモデルの描画
+    m_fighter->Draw(context, *m_states.get(), rotZ * rotX * rotY, view, m_proj);
 
     // デバッグフォントの描画
     m_debugFont->Render(m_states.get());
@@ -287,11 +261,15 @@ void Game::CreateDeviceDependentResources()
     m_gridFloor = std::make_unique<Imase::GridFloor>(
         device, context, m_states.get());
 
-    // サイコロの作成
     EffectFactory fx(device);
-    fx.SetDirectory(L"Resources/Models");
-    m_dice = Model::CreateFromCMO(device, L"Resources/Models/Dice.cmo", fx);
 
+    // 飛行機の作成
+    m_fighter = Model::CreateFromCMO(device, L"Resources/Models/Fighter.cmo", fx);
+
+    // 各軸の作成
+    m_ringX = Model::CreateFromCMO(device, L"Resources/Models/RingX.cmo", fx);
+    m_ringY = Model::CreateFromCMO(device, L"Resources/Models/RingY.cmo", fx);
+    m_ringZ = Model::CreateFromCMO(device, L"Resources/Models/RingZ.cmo", fx);
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.

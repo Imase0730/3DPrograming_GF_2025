@@ -134,5 +134,17 @@
     <MeshContentTask Include="Models\Dice.obj">
       <Filter>Models</Filter>
     </MeshContentTask>
+    <MeshContentTask Include="Models\Fighter.obj">
+      <Filter>Models</Filter>
+    </MeshContentTask>
+    <MeshContentTask Include="Models\RingX.obj">
+      <Filter>Models</Filter>
+    </MeshContentTask>
+    <MeshContentTask Include="Models\RingY.obj">
+      <Filter>Models</Filter>
+    </MeshContentTask>
+    <MeshContentTask Include="Models\RingZ.obj">
+      <Filter>Models</Filter>
+    </MeshContentTask>
   </ItemGroup>
 </Project>

@@ -83,13 +83,15 @@ private:
     // グリッドの床
     std::unique_ptr<Imase::GridFloor> m_gridFloor;
 
-    // サイコロのモデル
-    std::unique_ptr<DirectX::Model> m_dice;
+    // モデル（飛行機）
+    std::unique_ptr<DirectX::Model> m_fighter;
 
-    // サイコロの位置
-    DirectX::SimpleMath::Vector3 m_dicePosition;
+    // 各軸のモデル
+    std::unique_ptr<DirectX::Model> m_ringX;
+    std::unique_ptr<DirectX::Model> m_ringY;
+    std::unique_ptr<DirectX::Model> m_ringZ;
 
-    // サイコロのY軸の回転角度（度数）
-    float m_diceRotateY;
+    // 各軸に対する回転角（度数）
+    DirectX::SimpleMath::Vector3 m_rotate;
 
 };
