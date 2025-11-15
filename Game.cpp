@@ -75,15 +75,9 @@ void Game::Update(DX::StepTimer const& timer)
     // ImGuiの更新処理
     Imase::DXTK_ImGui::Update();
 
-    ImGui::Begin("GimbalLock(YXZ)");
+    ImGui::Begin("Title");
 
     // ----- ImGuiのウインドウに項目を追加する ----- //
-
-    float v[3] = { m_rotate.x, m_rotate.y, m_rotate.z };
-
-    ImGui::DragFloat3("Rotate", v , 1.0f);
-
-    m_rotate = SimpleMath::Vector3{ v[0], v[1], v[2] };
 
     // --------------------------------------------- //
 
@@ -129,21 +123,6 @@ void Game::Render()
 
     SimpleMath::Matrix world;
 
-    // 各軸に対する回転行列を作成する
-    SimpleMath::Matrix rotX =
-        SimpleMath::Matrix::CreateRotationX(XMConvertToRadians(m_rotate.x));
-    SimpleMath::Matrix rotY =
-        SimpleMath::Matrix::CreateRotationY(XMConvertToRadians(m_rotate.y));
-    SimpleMath::Matrix rotZ =
-        SimpleMath::Matrix::CreateRotationZ(XMConvertToRadians(m_rotate.z));
-
-    // 各軸の描画
-    m_ringY->Draw(context, *m_states.get(), rotY, view, m_proj);
-    m_ringX->Draw(context, *m_states.get(), rotX * rotY, view, m_proj);
-    m_ringZ->Draw(context, *m_states.get(), rotZ * rotX * rotY, view, m_proj);
-
-    // 飛行機のモデルの描画
-    m_fighter->Draw(context, *m_states.get(), rotZ * rotX * rotY, view, m_proj);
 
     // デバッグフォントの描画
     m_debugFont->Render(m_states.get());
@@ -263,13 +242,6 @@ void Game::CreateDeviceDependentResources()
 
     EffectFactory fx(device);
 
-    // 飛行機の作成
-    m_fighter = Model::CreateFromCMO(device, L"Resources/Models/Fighter.cmo", fx);
-
-    // 各軸の作成
-    m_ringX = Model::CreateFromCMO(device, L"Resources/Models/RingX.cmo", fx);
-    m_ringY = Model::CreateFromCMO(device, L"Resources/Models/RingY.cmo", fx);
-    m_ringZ = Model::CreateFromCMO(device, L"Resources/Models/RingZ.cmo", fx);
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.

@@ -82,16 +82,5 @@ private:
 
     // グリッドの床
     std::unique_ptr<Imase::GridFloor> m_gridFloor;
-
-    // モデル（飛行機）
-    std::unique_ptr<DirectX::Model> m_fighter;
-
-    // 各軸のモデル
-    std::unique_ptr<DirectX::Model> m_ringX;
-    std::unique_ptr<DirectX::Model> m_ringY;
-    std::unique_ptr<DirectX::Model> m_ringZ;
-
-    // 各軸に対する回転角（度数）
-    DirectX::SimpleMath::Vector3 m_rotate;
-
+ 
 };
