@@ -82,5 +82,14 @@ private:
 
     // グリッドの床
     std::unique_ptr<Imase::GridFloor> m_gridFloor;
- 
+
+    // プリミティブバッチ
+    std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionColor>> m_primitiveBatch;
+
+    // ベーシックエフェクト
+    std::unique_ptr<DirectX::BasicEffect> m_basicEffect;
+
+    // 入力レイアウト
+    Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
+
 };

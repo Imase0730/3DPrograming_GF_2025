@@ -121,8 +121,50 @@ void Game::Render()
     // グリッドの床の描画
     m_gridFloor->Render(context, view, m_proj);
 
+    // ----- 三角形の描画 ----- //
+
+    // 頂点データ
+    VertexPositionColor v[3] = 
+    {
+        { SimpleMath::Vector3( 0.0f, 1.0f, 0.0f), Colors::Yellow },     // 0
+        { SimpleMath::Vector3( 1.0f, 0.0f, 0.0f), Colors::Yellow },     // 1
+        { SimpleMath::Vector3(-1.0f, 0.0f, 0.0f), Colors::Yellow },     // 2
+    };
+
+    // インデックスデータ
+    uint16_t indexes[3] = { 0, 1, 2 };
+
+    // ラスタライザーステートの設定（反時計周りをカリングする）
+    context->RSSetState(m_states->CullCounterClockwise());
+
+    // ブレンドステートの設定（不透明）
+    context->OMSetBlendState(m_states->Opaque(), nullptr, 0xffffffff);
+
+    // デプスステンシルステートの設定（通常の設定）
+    context->OMSetDepthStencilState(m_states->DepthDefault(), 0);
+
     SimpleMath::Matrix world;
 
+    // ワールド行列を設定
+    m_basicEffect->SetWorld(world);
+    // ビュー行列を設定
+    m_basicEffect->SetView(view);
+    // 射影行列を設定
+    m_basicEffect->SetProjection(m_proj);
+
+    // エフェクトを適応する
+    m_basicEffect->Apply(context);
+
+    // 入力レイアウトを設定する
+    context->IASetInputLayout(m_inputLayout.Get());
+
+    // プリミティブバッチで描画する
+    m_primitiveBatch->Begin();
+
+    // 三角形を描画する
+    m_primitiveBatch->DrawIndexed(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, indexes, 3, v, 3);
+
+    m_primitiveBatch->End();
 
     // デバッグフォントの描画
     m_debugFont->Render(m_states.get());
@@ -240,7 +282,26 @@ void Game::CreateDeviceDependentResources()
     m_gridFloor = std::make_unique<Imase::GridFloor>(
         device, context, m_states.get());
 
-    EffectFactory fx(device);
+    // プリミティブバッチの作成
+    m_primitiveBatch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(context);
+
+    // ベーシックエフェクトの作成
+    m_basicEffect = std::make_unique<BasicEffect>(device);
+
+    // 頂点カラーを使用する
+    m_basicEffect->SetVertexColorEnabled(true);
+
+    // テクスチャを使用しない
+    m_basicEffect->SetTextureEnabled(false);
+
+    // ライトを使用しない
+    m_basicEffect->SetLightingEnabled(false);
+
+    // 入力レイアウトの作成
+    DX::ThrowIfFailed(
+        CreateInputLayoutFromEffect<VertexPositionColor>(
+            device, m_basicEffect.get(), m_inputLayout.ReleaseAndGetAddressOf())
+    );
 
 }
 
