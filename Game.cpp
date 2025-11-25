@@ -121,18 +121,19 @@ void Game::Render()
     // グリッドの床の描画
     m_gridFloor->Render(context, view, m_proj);
 
-    // ----- 三角形の描画 ----- //
+    // ----- 四角形の描画 ----- //
 
     // 頂点データ
-    VertexPositionColor v[3] = 
+    VertexPositionTexture v[4] = 
     {
-        { SimpleMath::Vector3( 0.0f, 1.0f, 0.0f), Colors::Yellow },     // 0
-        { SimpleMath::Vector3( 1.0f, 0.0f, 0.0f), Colors::Yellow },     // 1
-        { SimpleMath::Vector3(-1.0f, 0.0f, 0.0f), Colors::Yellow },     // 2
+        { SimpleMath::Vector3(-1.0f,  1.0f, 0.0f), SimpleMath::Vector2( 0.0f, 0.0f) }, // 0
+        { SimpleMath::Vector3( 1.0f,  1.0f, 0.0f), SimpleMath::Vector2( 2.0f, 0.0f) }, // 1
+        { SimpleMath::Vector3( 1.0f, -1.0f, 0.0f), SimpleMath::Vector2( 2.0f, 2.0f) }, // 2
+        { SimpleMath::Vector3(-1.0f, -1.0f, 0.0f), SimpleMath::Vector2( 0.0f, 2.0f) }, // 3
     };
 
     // インデックスデータ
-    uint16_t indexes[3] = { 0, 1, 2 };
+    uint16_t indexes[6] = { 0, 1, 2, 0, 2, 3 };
 
     // ラスタライザーステートの設定（反時計周りをカリングする）
     context->RSSetState(m_states->CullCounterClockwise());
@@ -143,6 +144,10 @@ void Game::Render()
     // デプスステンシルステートの設定（通常の設定）
     context->OMSetDepthStencilState(m_states->DepthDefault(), 0);
 
+    // テクスチャサンプラーの設定
+    ID3D11SamplerState* samples[] = { m_states->LinearWrap() };
+    context->PSSetSamplers(0, 1, samples);
+
     SimpleMath::Matrix world;
 
     // ワールド行列を設定
@@ -151,6 +156,9 @@ void Game::Render()
     m_basicEffect->SetView(view);
     // 射影行列を設定
     m_basicEffect->SetProjection(m_proj);
+
+    // テクスチャを設定する
+    m_basicEffect->SetTexture(m_diceTexture.Get());
 
     // エフェクトを適応する
     m_basicEffect->Apply(context);
@@ -162,7 +170,7 @@ void Game::Render()
     m_primitiveBatch->Begin();
 
     // 三角形を描画する
-    m_primitiveBatch->DrawIndexed(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, indexes, 3, v, 3);
+    m_primitiveBatch->DrawIndexed(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, indexes, 6, v, 4);
 
     m_primitiveBatch->End();
 
@@ -283,24 +291,30 @@ void Game::CreateDeviceDependentResources()
         device, context, m_states.get());
 
     // プリミティブバッチの作成
-    m_primitiveBatch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(context);
+    m_primitiveBatch = std::make_unique<PrimitiveBatch<VertexPositionTexture>>(context);
 
     // ベーシックエフェクトの作成
     m_basicEffect = std::make_unique<BasicEffect>(device);
 
-    // 頂点カラーを使用する
-    m_basicEffect->SetVertexColorEnabled(true);
+    // 頂点カラーを使用しない
+    m_basicEffect->SetVertexColorEnabled(false);
 
-    // テクスチャを使用しない
-    m_basicEffect->SetTextureEnabled(false);
+    // テクスチャを使用する
+    m_basicEffect->SetTextureEnabled(true);
 
     // ライトを使用しない
     m_basicEffect->SetLightingEnabled(false);
 
     // 入力レイアウトの作成
     DX::ThrowIfFailed(
-        CreateInputLayoutFromEffect<VertexPositionColor>(
+        CreateInputLayoutFromEffect<VertexPositionTexture>(
             device, m_basicEffect.get(), m_inputLayout.ReleaseAndGetAddressOf())
+    );
+
+    // テクスチャの読み込み（dice.dds）
+    DX::ThrowIfFailed(
+        CreateDDSTextureFromFile( device, L"Resources/Textures/dice.dds"
+                                , nullptr, m_diceTexture.ReleaseAndGetAddressOf())
     );
 
 }

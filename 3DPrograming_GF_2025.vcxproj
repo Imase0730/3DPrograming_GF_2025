@@ -58,6 +58,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\MeshContentTask.props" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\ImageContentTask.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -284,6 +285,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="directx.ico" />
+    <ImageContentTask Include="Textures\dice.png" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="settings.manifest" />
@@ -312,6 +314,7 @@
   <ImportGroup Label="ExtensionTargets">
     <Import Project="packages\directxtk_desktop_2019.2025.7.10.1\build\native\directxtk_desktop_2019.targets" Condition="Exists('packages\directxtk_desktop_2019.2025.7.10.1\build\native\directxtk_desktop_2019.targets')" />
     <Import Project="$(VCTargetsPath)\BuildCustomizations\MeshContentTask.targets" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\ImageContentTask.targets" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

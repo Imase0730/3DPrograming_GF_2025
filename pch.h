@@ -97,6 +97,7 @@ namespace DX
 #include "DirectXHelpers.h"
 #include "GeometricPrimitive.h"
 #include "Model.h"
+#include "DDSTextureLoader.h"
 
 // DirectXTK_Unitilites
 #include "DirectXTK_Utilities/DebugDraw.h"

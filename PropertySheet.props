@@ -3,6 +3,7 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
     <cmo>CMO/</cmo>
+    <dds>Resources/Textures/</dds>
   </PropertyGroup>
   <PropertyGroup />
   <ItemDefinitionGroup>
@@ -12,10 +13,17 @@
     <PostBuildEvent>
       <Command>call "$(ProjectDir)Tools\CmoPathCut.bat" "$(ProjectDir)"</Command>
     </PostBuildEvent>
+    <ImageContentTask>
+      <ContentOutput>$(dds)%(Filename).dds</ContentOutput>
+    </ImageContentTask>
   </ItemDefinitionGroup>
   <ItemGroup>
     <BuildMacro Include="cmo">
       <Value>$(cmo)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="dds">
+      <Value>$(dds)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
   </ItemGroup>

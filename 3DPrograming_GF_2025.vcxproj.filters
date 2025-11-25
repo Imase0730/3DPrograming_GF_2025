@@ -20,6 +20,9 @@
     <Filter Include="ImGui">
       <UniqueIdentifier>{7add0e56-2ab3-487a-a313-612b2384934a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Textures">
+      <UniqueIdentifier>{9f5d6ae8-e517-4bfd-b791-29c044f3d2d6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -146,5 +149,10 @@
     <MeshContentTask Include="Models\RingZ.obj">
       <Filter>Models</Filter>
     </MeshContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Textures\dice.png">
+      <Filter>Textures</Filter>
+    </ImageContentTask>
   </ItemGroup>
 </Project>
