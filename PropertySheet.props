@@ -15,6 +15,7 @@
     </PostBuildEvent>
     <ImageContentTask>
       <ContentOutput>$(dds)%(Filename).dds</ContentOutput>
+      <GeneratePremultipliedAlpha>true</GeneratePremultipliedAlpha>
     </ImageContentTask>
   </ItemDefinitionGroup>
   <ItemGroup>

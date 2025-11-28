@@ -84,7 +84,7 @@ private:
     std::unique_ptr<Imase::GridFloor> m_gridFloor;
 
     // プリミティブバッチ
-    std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionTexture>> m_primitiveBatch;
+    std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionColorTexture>> m_primitiveBatch;
 
     // ベーシックエフェクト
     std::unique_ptr<DirectX::BasicEffect> m_basicEffect;

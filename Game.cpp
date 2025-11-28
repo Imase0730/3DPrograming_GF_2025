@@ -123,29 +123,34 @@ void Game::Render()
 
     // ----- 四角形の描画 ----- //
 
-    // 頂点データ
-    VertexPositionTexture v[4] = 
+   // 頂点データ（位置、頂点カラー、テクスチャ座標）
+    VertexPositionColorTexture vertexes[] =
     {
-        { SimpleMath::Vector3(-1.0f,  1.0f, 0.0f), SimpleMath::Vector2( 0.0f, 0.0f) }, // 0
-        { SimpleMath::Vector3( 1.0f,  1.0f, 0.0f), SimpleMath::Vector2( 2.0f, 0.0f) }, // 1
-        { SimpleMath::Vector3( 1.0f, -1.0f, 0.0f), SimpleMath::Vector2( 2.0f, 2.0f) }, // 2
-        { SimpleMath::Vector3(-1.0f, -1.0f, 0.0f), SimpleMath::Vector2( 0.0f, 2.0f) }, // 3
-    };
+        { SimpleMath::Vector3(-1.0f,  1.0f, 0.0f), SimpleMath::Color(1.0f, 1.0f, 1.0f, 0.5f), SimpleMath::Vector2(0.0f, 0.0f) }, // 0
+        { SimpleMath::Vector3( 1.0f,  1.0f, 0.0f), SimpleMath::Color(1.0f, 1.0f, 1.0f, 0.5f), SimpleMath::Vector2(1.0f, 0.0f) }, // 1
+        { SimpleMath::Vector3( 1.0f, -1.0f, 0.0f), SimpleMath::Color(1.0f, 1.0f, 1.0f, 0.5f), SimpleMath::Vector2(1.0f, 1.0f) }, // 2
+        { SimpleMath::Vector3(-1.0f, -1.0f, 0.0f), SimpleMath::Color(1.0f, 1.0f, 1.0f, 0.5f), SimpleMath::Vector2(0.0f, 1.0f) }, // 3
+     };
 
     // インデックスデータ
-    uint16_t indexes[6] = { 0, 1, 2, 0, 2, 3 };
+    uint16_t indexes[] = {
+        0, 1, 2, 0, 2, 3,
+    };
+
+    int vertex_cnt = sizeof(vertexes) / sizeof(VertexPositionColorTexture);
+    int index_cnt = sizeof(indexes) / sizeof(uint16_t);
 
     // ラスタライザーステートの設定（反時計周りをカリングする）
     context->RSSetState(m_states->CullCounterClockwise());
 
-    // ブレンドステートの設定（不透明）
-    context->OMSetBlendState(m_states->Opaque(), nullptr, 0xffffffff);
+    // ブレンドステートの設定（半透明）
+    context->OMSetBlendState(m_states->AlphaBlend(), nullptr, 0xffffffff);
 
     // デプスステンシルステートの設定（通常の設定）
     context->OMSetDepthStencilState(m_states->DepthDefault(), 0);
 
     // テクスチャサンプラーの設定
-    ID3D11SamplerState* samples[] = { m_states->LinearWrap() };
+    ID3D11SamplerState* samples[] = { m_states->PointWrap() };
     context->PSSetSamplers(0, 1, samples);
 
     SimpleMath::Matrix world;
@@ -170,9 +175,30 @@ void Game::Render()
     m_primitiveBatch->Begin();
 
     // 三角形を描画する
-    m_primitiveBatch->DrawIndexed(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, indexes, 6, v, 4);
+    m_primitiveBatch->DrawIndexed(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, indexes, index_cnt, vertexes, vertex_cnt);
 
     m_primitiveBatch->End();
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    // 平行移動行列の作成
+    world = SimpleMath::Matrix::CreateTranslation(0.0f, 0.0f, 1.0f);
+
+    // ワールド行列を設定
+    m_basicEffect->SetWorld(world);
+
+    // エフェクトを適応する
+    m_basicEffect->Apply(context);
+
+    // プリミティブバッチで描画する
+    m_primitiveBatch->Begin();
+
+    // 三角形を描画する
+    m_primitiveBatch->DrawIndexed(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, indexes, index_cnt, vertexes, vertex_cnt);
+
+    m_primitiveBatch->End();
+
+    ///////////////////////////////////////////////////////////////////////////
 
     // デバッグフォントの描画
     m_debugFont->Render(m_states.get());
@@ -291,13 +317,13 @@ void Game::CreateDeviceDependentResources()
         device, context, m_states.get());
 
     // プリミティブバッチの作成
-    m_primitiveBatch = std::make_unique<PrimitiveBatch<VertexPositionTexture>>(context);
+    m_primitiveBatch = std::make_unique<PrimitiveBatch<VertexPositionColorTexture>>(context);
 
     // ベーシックエフェクトの作成
     m_basicEffect = std::make_unique<BasicEffect>(device);
 
-    // 頂点カラーを使用しない
-    m_basicEffect->SetVertexColorEnabled(false);
+    // 頂点カラーを使用する
+    m_basicEffect->SetVertexColorEnabled(true);
 
     // テクスチャを使用する
     m_basicEffect->SetTextureEnabled(true);
@@ -307,13 +333,13 @@ void Game::CreateDeviceDependentResources()
 
     // 入力レイアウトの作成
     DX::ThrowIfFailed(
-        CreateInputLayoutFromEffect<VertexPositionTexture>(
+        CreateInputLayoutFromEffect<VertexPositionColorTexture>(
             device, m_basicEffect.get(), m_inputLayout.ReleaseAndGetAddressOf())
     );
 
     // テクスチャの読み込み（dice.dds）
     DX::ThrowIfFailed(
-        CreateDDSTextureFromFile( device, L"Resources/Textures/dice.dds"
+        CreateDDSTextureFromFile( device, L"Resources/Textures/Fighter.dds"
                                 , nullptr, m_diceTexture.ReleaseAndGetAddressOf())
     );
 
