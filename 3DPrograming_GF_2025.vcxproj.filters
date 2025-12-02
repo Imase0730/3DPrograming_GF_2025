@@ -131,9 +131,6 @@
     </Manifest>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <MeshContentTask Include="Models\Dice.obj">
       <Filter>Models</Filter>
     </MeshContentTask>
@@ -157,5 +154,8 @@
     <ImageContentTask Include="Textures\Fighter.png">
       <Filter>Textures</Filter>
     </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

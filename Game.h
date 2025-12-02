@@ -84,7 +84,7 @@ private:
     std::unique_ptr<Imase::GridFloor> m_gridFloor;
 
     // プリミティブバッチ
-    std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionTexture>> m_primitiveBatch;
+    std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionNormal>> m_primitiveBatch;
 
     // ベーシックエフェクト
     std::unique_ptr<DirectX::BasicEffect> m_basicEffect;
@@ -92,7 +92,7 @@ private:
     // 入力レイアウト
     Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
 
-    // テクスチャハンドル（dice.dds）
-    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_diceTexture;
+    // ティーポットのモデル
+    std::unique_ptr<DirectX::GeometricPrimitive> m_teapot;
 
 };

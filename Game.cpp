@@ -121,75 +121,12 @@ void Game::Render()
     // グリッドの床の描画
     m_gridFloor->Render(context, view, m_proj);
 
-    // ----- 立方体の描画 ----- //
-
-   // 頂点データ（位置、テクスチャ座標）
-    VertexPositionTexture vertexes[] =
-    {
-        // 上面
-        { SimpleMath::Vector3(-1.0f,  1.0f, -1.0f), SimpleMath::Vector2(0.0f,  0.0f)  }, // 0
-        { SimpleMath::Vector3( 1.0f,  1.0f, -1.0f), SimpleMath::Vector2(0.25f, 0.0f)  }, // 1
-        { SimpleMath::Vector3( 1.0f,  1.0f,  1.0f), SimpleMath::Vector2(0.25f, 0.25f) }, // 2
-        { SimpleMath::Vector3(-1.0f,  1.0f,  1.0f), SimpleMath::Vector2(0.0f,  0.25f) }, // 3
-
-        // 下面
-        { SimpleMath::Vector3(-1.0f, -1.0f,  1.0f), SimpleMath::Vector2(0.25f, 0.25f) }, // 4
-        { SimpleMath::Vector3( 1.0f, -1.0f,  1.0f), SimpleMath::Vector2(0.5f,  0.25f) }, // 5
-        { SimpleMath::Vector3( 1.0f, -1.0f, -1.0f), SimpleMath::Vector2(0.5f,  0.5f)  }, // 6
-        { SimpleMath::Vector3(-1.0f, -1.0f, -1.0f), SimpleMath::Vector2(0.25f, 0.5f)  }, // 7
-
-        // 正面
-        { SimpleMath::Vector3(-1.0f,  1.0f,  1.0f), SimpleMath::Vector2(0.25f, 0.0f)  }, // 8
-        { SimpleMath::Vector3( 1.0f,  1.0f,  1.0f), SimpleMath::Vector2(0.5f,  0.0f)  }, // 9
-        { SimpleMath::Vector3( 1.0f, -1.0f,  1.0f), SimpleMath::Vector2(0.5f,  0.25f) }, // 10
-        { SimpleMath::Vector3(-1.0f, -1.0f,  1.0f), SimpleMath::Vector2(0.25f, 0.25f) }, // 11
-
-        // 後面
-        { SimpleMath::Vector3( 1.0f,  1.0f, -1.0f), SimpleMath::Vector2(0.0f,  0.25f) }, // 12
-        { SimpleMath::Vector3(-1.0f,  1.0f, -1.0f), SimpleMath::Vector2(0.25f, 0.25f) }, // 13
-        { SimpleMath::Vector3(-1.0f, -1.0f, -1.0f), SimpleMath::Vector2(0.25f, 0.5f)  }, // 14
-        { SimpleMath::Vector3( 1.0f, -1.0f, -1.0f), SimpleMath::Vector2(0.0f,  0.5f)  }, // 15
-
-        // 左面
-        { SimpleMath::Vector3(-1.0f,  1.0f, -1.0f), SimpleMath::Vector2(0.5f,  0.0f)  }, // 16
-        { SimpleMath::Vector3(-1.0f,  1.0f,  1.0f), SimpleMath::Vector2(0.75f, 0.0f)  }, // 17
-        { SimpleMath::Vector3(-1.0f, -1.0f,  1.0f), SimpleMath::Vector2(0.75f, 0.25f) }, // 18
-        { SimpleMath::Vector3(-1.0f, -1.0f, -1.0f), SimpleMath::Vector2(0.5f,  0.25f) }, // 19
-
-        // 右面
-        { SimpleMath::Vector3( 1.0f,  1.0f,  1.0f), SimpleMath::Vector2(0.75f, 0.0f)  }, // 20
-        { SimpleMath::Vector3( 1.0f,  1.0f, -1.0f), SimpleMath::Vector2(1.0f,  0.0f)  }, // 21
-        { SimpleMath::Vector3( 1.0f, -1.0f, -1.0f), SimpleMath::Vector2(1.0f,  0.25f) }, // 22
-        { SimpleMath::Vector3( 1.0f, -1.0f,  1.0f), SimpleMath::Vector2(0.75f, 0.25f) }, // 23
-    };
-
-    // インデックスデータ
-    uint16_t indexes[] = {
-        0, 1, 2, 0, 2, 3,
-        4, 5, 6, 4, 6, 7,
-        8, 9, 10, 8, 10, 11,
-        12, 13, 14, 12, 14, 15,
-        16, 17, 18, 16, 18, 19,
-        20, 21, 22, 20, 22, 23
-    };
-
-    int vertex_cnt = sizeof(vertexes) / sizeof(VertexPositionTexture);
-    int index_cnt = sizeof(indexes) / sizeof(uint16_t);
-
-    // ラスタライザーステートの設定（反時計周りをカリングする）
-    context->RSSetState(m_states->CullCounterClockwise());
-
-    // ブレンドステートの設定（不透明）
-    context->OMSetBlendState(m_states->Opaque(), nullptr, 0xffffffff);
-
-    // デプスステンシルステートの設定（通常の設定）
-    context->OMSetDepthStencilState(m_states->DepthDefault(), 0);
-
-    // テクスチャサンプラーの設定
-    ID3D11SamplerState* samples[] = { m_states->LinearWrap() };
-    context->PSSetSamplers(0, 1, samples);
+    // ----- ティーポットの描画 ----- //
 
     SimpleMath::Matrix world;
+
+    // ティーポットを少し上へ移動する
+    world = SimpleMath::Matrix::CreateTranslation(0.0f, 0.7f, 0.0f);
 
     // ワールド行列を設定
     m_basicEffect->SetWorld(world);
@@ -198,22 +135,37 @@ void Game::Render()
     // 射影行列を設定
     m_basicEffect->SetProjection(m_proj);
 
-    // テクスチャを設定する
-    m_basicEffect->SetTexture(m_diceTexture.Get());
+    // ----- 環境光の設定 ----- //
 
-    // エフェクトを適応する
-    m_basicEffect->Apply(context);
+    // アンビエント色の設定
+    m_basicEffect->SetAmbientLightColor(SimpleMath::Color(0.3f, 0.3f, 0.3f, 1.0f));
+   
+    // ----- ライトの設定 ----- //
 
-    // 入力レイアウトを設定する
-    context->IASetInputLayout(m_inputLayout.Get());
+    // ライトをON
+    m_basicEffect->SetLightEnabled(0, true);
+    // ディフューズ色を設定する
+    m_basicEffect->SetLightDiffuseColor(0, Colors::White);
+    // スペキュラ色を設定する
+    m_basicEffect->SetLightSpecularColor(0, Colors::White);
+    // ライトの向きを設定する
+    m_basicEffect->SetLightDirection(0, SimpleMath::Vector3(0.0f, -1.0f, 0.0f));
 
-    // プリミティブバッチで描画する
-    m_primitiveBatch->Begin();
+    // 他のライトはOFF
+    m_basicEffect->SetLightEnabled(1, false);
+    m_basicEffect->SetLightEnabled(2, false);
 
-    // 三角形を描画する
-    m_primitiveBatch->DrawIndexed(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST, indexes, index_cnt, vertexes, vertex_cnt);
+    // ----- ティーポットのマテリアルの設定 ----- //
 
-    m_primitiveBatch->End();
+    // ディフューズ色を設定する
+    m_basicEffect->SetDiffuseColor(Colors::Red);
+    // スペキュラ色を設定する
+    m_basicEffect->SetSpecularColor(Colors::White);
+    // スペキュラパワーを設定する
+    m_basicEffect->SetSpecularPower(80);
+
+    // ティーポットを描画する
+    m_teapot->Draw(m_basicEffect.get(), m_inputLayout.Get());
 
     // デバッグフォントの描画
     m_debugFont->Render(m_states.get());
@@ -332,7 +284,7 @@ void Game::CreateDeviceDependentResources()
         device, context, m_states.get());
 
     // プリミティブバッチの作成
-    m_primitiveBatch = std::make_unique<PrimitiveBatch<VertexPositionTexture>>(context);
+    m_primitiveBatch = std::make_unique<PrimitiveBatch<VertexPositionNormal>>(context);
 
     // ベーシックエフェクトの作成
     m_basicEffect = std::make_unique<BasicEffect>(device);
@@ -340,23 +292,26 @@ void Game::CreateDeviceDependentResources()
     // 頂点カラーを使用しない
     m_basicEffect->SetVertexColorEnabled(false);
 
-    // テクスチャを使用する
-    m_basicEffect->SetTextureEnabled(true);
+    // テクスチャを使用しない
+    m_basicEffect->SetTextureEnabled(false);
 
-    // ライトを使用しない
-    m_basicEffect->SetLightingEnabled(false);
+    // ライトを使用する
+    m_basicEffect->SetLightingEnabled(true);
+
+    // ディフォルトライトを設定する
+    m_basicEffect->EnableDefaultLighting();
+
+    // ピクセルシェーダーでライトの計算を行う
+    m_basicEffect->SetPerPixelLighting(true);
 
     // 入力レイアウトの作成
     DX::ThrowIfFailed(
-        CreateInputLayoutFromEffect<VertexPositionTexture>(
+        CreateInputLayoutFromEffect<VertexPositionNormalTexture>(
             device, m_basicEffect.get(), m_inputLayout.ReleaseAndGetAddressOf())
     );
 
-    // テクスチャの読み込み（dice.dds）
-    DX::ThrowIfFailed(
-        CreateDDSTextureFromFile( device, L"Resources/Textures/dice.dds"
-                                , nullptr, m_diceTexture.ReleaseAndGetAddressOf())
-    );
+    // ティーポットのモデルを作成する
+    m_teapot = GeometricPrimitive::CreateTeapot(context, 2.0f);
 
 }
 
