@@ -95,4 +95,28 @@ private:
     // ティーポットのモデル
     std::unique_ptr<DirectX::GeometricPrimitive> m_teapot;
 
+    // ライトの方向ベクトル
+    DirectX::SimpleMath::Vector3 m_lightDirection;
+
+    // アンビエントライト色
+    DirectX::SimpleMath::Color m_ambientLightColor;
+
+    // ライトのディフューズ色
+    DirectX::SimpleMath::Color m_lightDiffuseColor;
+
+    // ライトのスペキュラー色
+    DirectX::SimpleMath::Color m_lightSpecularColor;
+
+    // ディフューズ色
+    DirectX::SimpleMath::Color m_diffuseColor;
+
+    // スペキュラー色
+    DirectX::SimpleMath::Color m_specularColor;
+
+    // スペキュラーパワー
+    float m_specularPower;
+
+    // エミッシブ色
+    DirectX::SimpleMath::Color m_emissiveColor;
+
 };

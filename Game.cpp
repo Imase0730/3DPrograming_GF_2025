@@ -12,6 +12,12 @@ using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
 Game::Game() noexcept(false)
+    : m_ambientLightColor{}
+    , m_lightDiffuseColor{}
+    , m_lightSpecularColor{}
+    , m_specularPower{}
+    , m_diffuseColor{}
+    , m_emissiveColor{}
 {
     m_deviceResources = std::make_unique<DX::DeviceResources>();
     // TODO: Provide parameters for swapchain format, depth/stencil format, and backbuffer count.
@@ -40,11 +46,31 @@ void Game::Initialize(HWND window, int width, int height)
 
     // Fontの変更
     ImGuiIO& io = ImGui::GetIO();
-    io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/ARIAL.ttf", 24.0f);
+    io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/ARIAL.ttf", 16.0f);
 
     // デバッグカメラの作成
     m_debugCamera = std::make_unique<Imase::DebugCamera>(width, height);
 
+    // アンビエントライト色の初期設定
+    m_ambientLightColor = { 0.3f, 0.3f, 0.3f };
+
+    // ライトの向きの初期設定
+    m_lightDirection = { 0.0f, -1.0f, 0.0f };
+
+    // ライトのディフューズ色の初期設定
+    m_lightDiffuseColor = Colors::White;
+
+    // ライトのスペキュラー色の初期設定
+    m_lightSpecularColor = Colors::White;
+
+    // ディフューズ色の初期設定
+    m_diffuseColor = Colors::White;
+
+    // スペキュラー色の初期設定
+    m_specularColor = Colors::White;
+
+    // スペキュラーパワーの初期設定
+    m_specularPower = 80.0f;
 }
 
 #pragma region Frame Update
@@ -75,17 +101,63 @@ void Game::Update(DX::StepTimer const& timer)
     // ImGuiの更新処理
     Imase::DXTK_ImGui::Update();
 
-    ImGui::Begin("Title");
+    ImGui::Begin("Light & Material");
 
     // ----- ImGuiのウインドウに項目を追加する ----- //
+
+    std::vector<float> v;
+
+    ImGui::SeparatorText("LIGHT SETTING:");
+
+    // ライトの向き
+    v = { m_lightDirection.x, m_lightDirection.y, m_lightDirection.z };
+    ImGui::DragFloat3("LightDirection", v.data(), 0.01f);
+    m_lightDirection = { v[0], v[1], v[2] };
+    m_lightDirection.Normalize();
+
+    // アンビエントライト色
+    v = { m_ambientLightColor.x, m_ambientLightColor.y, m_ambientLightColor.z };
+    ImGui::ColorEdit3("AmbientLightColor", v.data());
+    m_ambientLightColor = { v[0], v[1], v[2] };
+
+    // ライトのディフューズ色
+    v = { m_lightDiffuseColor.x, m_lightDiffuseColor.y, m_lightDiffuseColor.z };
+    ImGui::ColorEdit3("LightDiffuseColor", v.data());
+    m_lightDiffuseColor = { v[0], v[1], v[2] };
+
+    // ライトのスペキュラー色
+    v = { m_lightSpecularColor.x, m_lightSpecularColor.y, m_lightSpecularColor.z };
+    ImGui::ColorEdit3("LightSpecularColor", v.data());
+    m_lightSpecularColor = { v[0], v[1], v[2] };
+
+    ImGui::SeparatorText("MATERIAL SETTING:");
+
+    // ディフューズ色
+    v = { m_diffuseColor.x, m_diffuseColor.y, m_diffuseColor.z };
+    ImGui::ColorEdit3("DiffuseColor", v.data());
+    m_diffuseColor = { v[0], v[1], v[2] };
+
+    // スペキュラー色
+    v = { m_specularColor.x, m_specularColor.y, m_specularColor.z };
+    ImGui::ColorEdit3("SpecularColor", v.data());
+    m_specularColor = { v[0], v[1], v[2] };
+
+    // スペキュラーパワー
+    ImGui::DragFloat("SpecuarPower", &m_specularPower, 1.0f, 10.0f, 100.0f);
+
+    // エミッシブ色
+    v = { m_emissiveColor.x, m_emissiveColor.y, m_emissiveColor.z };
+    ImGui::ColorEdit3("EmissiveColor", v.data());
+    m_emissiveColor = { v[0], v[1], v[2] };
 
     // --------------------------------------------- //
 
     // デバッグカメラの更新
-    m_debugCamera->Update(!ImGui::IsWindowFocused());
+    m_debugCamera->Update(!ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows));
 
     ImGui::End();
 
+//    ImGui::ShowDemoWindow();
 #else
     // Release
 
@@ -138,18 +210,18 @@ void Game::Render()
     // ----- 環境光の設定 ----- //
 
     // アンビエント色の設定
-    m_basicEffect->SetAmbientLightColor(SimpleMath::Color(0.3f, 0.3f, 0.3f, 1.0f));
+    m_basicEffect->SetAmbientLightColor(m_ambientLightColor);
    
     // ----- ライトの設定 ----- //
 
     // ライトをON
     m_basicEffect->SetLightEnabled(0, true);
     // ディフューズ色を設定する
-    m_basicEffect->SetLightDiffuseColor(0, Colors::White);
+    m_basicEffect->SetLightDiffuseColor(0, m_lightDiffuseColor);
     // スペキュラ色を設定する
-    m_basicEffect->SetLightSpecularColor(0, Colors::White);
+    m_basicEffect->SetLightSpecularColor(0, m_lightSpecularColor);
     // ライトの向きを設定する
-    m_basicEffect->SetLightDirection(0, SimpleMath::Vector3(0.0f, -1.0f, 0.0f));
+    m_basicEffect->SetLightDirection(0, m_lightDirection);
 
     // 他のライトはOFF
     m_basicEffect->SetLightEnabled(1, false);
@@ -158,11 +230,13 @@ void Game::Render()
     // ----- ティーポットのマテリアルの設定 ----- //
 
     // ディフューズ色を設定する
-    m_basicEffect->SetDiffuseColor(Colors::Red);
+    m_basicEffect->SetDiffuseColor(m_diffuseColor);
     // スペキュラ色を設定する
-    m_basicEffect->SetSpecularColor(Colors::White);
+    m_basicEffect->SetSpecularColor(m_specularColor);
     // スペキュラパワーを設定する
-    m_basicEffect->SetSpecularPower(80);
+    m_basicEffect->SetSpecularPower(m_specularPower);
+    // エミッシブ色を設定する
+    m_basicEffect->SetEmissiveColor(m_emissiveColor);
 
     // ティーポットを描画する
     m_teapot->Draw(m_basicEffect.get(), m_inputLayout.Get());
