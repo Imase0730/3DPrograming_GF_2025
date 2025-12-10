@@ -119,4 +119,7 @@ private:
     // エミッシブ色
     DirectX::SimpleMath::Color m_emissiveColor;
 
+    // モデル
+    std::unique_ptr<DirectX::Model> m_model;
+
 };

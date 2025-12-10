@@ -239,7 +239,21 @@ void Game::Render()
     m_basicEffect->SetEmissiveColor(m_emissiveColor);
 
     // ティーポットを描画する
-    m_teapot->Draw(m_basicEffect.get(), m_inputLayout.Get());
+    //m_teapot->Draw(m_basicEffect.get(), m_inputLayout.Get());
+
+    // モデルのエフェクトを更新する
+    m_model->UpdateEffects([&](IEffect* effect)
+        {
+            IEffectLights* lights = dynamic_cast<IEffectLights*>(effect);
+            if (lights)
+            {
+                lights->SetLightDiffuseColor(0, m_lightDiffuseColor);
+            }
+        }
+    );
+
+    // モデルを描画する
+    m_model->Draw(context, *m_states, world, view, m_proj);
 
     // デバッグフォントの描画
     m_debugFont->Render(m_states.get());
@@ -386,6 +400,10 @@ void Game::CreateDeviceDependentResources()
 
     // ティーポットのモデルを作成する
     m_teapot = GeometricPrimitive::CreateTeapot(context, 2.0f);
+
+    // モデルの読み込み
+    EffectFactory fx(device);
+    m_model = Model::CreateFromCMO(device, L"Resources/Models/Monkey.cmo", fx);
 
 }
 

@@ -146,6 +146,9 @@
     <MeshContentTask Include="Models\RingZ.obj">
       <Filter>Models</Filter>
     </MeshContentTask>
+    <MeshContentTask Include="Models\Monkey.obj">
+      <Filter>Models</Filter>
+    </MeshContentTask>
   </ItemGroup>
   <ItemGroup>
     <ImageContentTask Include="Textures\dice.png">
