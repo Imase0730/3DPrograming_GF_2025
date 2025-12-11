@@ -44,15 +44,19 @@ namespace Imase
 		// trueの場合は初期化済み
 		static bool m_isInitialized;
 
+		// ゲーム画面の解像度
+		static int m_screenWidth;
+		static int m_screenHeight;
+
 	public:
 		// 初期化関数
-		static void Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* context);
+		static void Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* context, int screenWidth, int screenHeight);
 
 		// リセット関数
 		static void Reset();
 
 		// 更新処理
-		static void Update();
+		static void Update(HWND hWnd);
 
 		// 描画処理
 		static void Render();

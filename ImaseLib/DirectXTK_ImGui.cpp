@@ -11,14 +11,27 @@
 #include "DirectXTK_ImGui.h"
 
 bool Imase::DXTK_ImGui::m_isInitialized = false;
+int Imase::DXTK_ImGui::m_screenWidth = 0;
+int Imase::DXTK_ImGui::m_screenHeight = 0;
 
 // 初期化関数
-void Imase::DXTK_ImGui::Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* context)
+void Imase::DXTK_ImGui::Initialize(
+    HWND hWnd,
+    ID3D11Device* device,
+    ID3D11DeviceContext* context,
+    int screenWidth,
+    int screenHeight
+)
 {
     // リセット処理
     Imase::DXTK_ImGui::Reset();
 
+    // 初期化済み
     m_isInitialized = true;
+
+    // ゲーム画面の解像度
+    m_screenWidth = screenWidth;
+    m_screenHeight = screenHeight;
 
     //  バージョンの確認
     IMGUI_CHECKVERSION();
@@ -50,11 +63,20 @@ void Imase::DXTK_ImGui::Reset()
 }
 
 // 更新処理
-void Imase::DXTK_ImGui::Update()
+void Imase::DXTK_ImGui::Update(HWND hWnd)
 {
     //  新フレームの開始
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
+
+    // 実際のモニターの解像度に合わせてスケールを掛ける
+    RECT rect = {};
+    GetClientRect(hWnd, &rect);
+    ImGuiIO& io = ImGui::GetIO();
+    io.DisplayFramebufferScale = ImVec2(
+        m_screenWidth / static_cast<float>(rect.right - rect.left),
+        m_screenHeight / static_cast<float>(rect.bottom - rect.top) );
+    
     ImGui::NewFrame();
 
     //  デモウィンドウの描画

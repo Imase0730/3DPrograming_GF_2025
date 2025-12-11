@@ -44,9 +44,11 @@ void Game::Initialize(HWND window, int width, int height)
     m_timer.SetTargetElapsedSeconds(1.0 / 60);
     */
 
+#ifdef _DEBUG
     // Fontの変更
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/ARIAL.ttf", 16.0f);
+#endif
 
     // デバッグカメラの作成
     m_debugCamera = std::make_unique<Imase::DebugCamera>(width, height);
@@ -99,7 +101,7 @@ void Game::Update(DX::StepTimer const& timer)
     // Debug
 
     // ImGuiの更新処理
-    Imase::DXTK_ImGui::Update();
+    Imase::DXTK_ImGui::Update(m_deviceResources->GetWindow());
 
     ImGui::Begin("Light & Material");
 
@@ -356,8 +358,10 @@ void Game::CreateDeviceDependentResources()
     device;
 
 #ifdef _DEBUG
+    int w, h;
+    GetDefaultSize(w, h);
     // ImuGuiの初期化
-    Imase::DXTK_ImGui::Initialize(m_deviceResources->GetWindow(), device, context);
+    Imase::DXTK_ImGui::Initialize(m_deviceResources->GetWindow(), device, context, w, h);
 #endif // _DEBUG
 
     // コモンステートの作成
