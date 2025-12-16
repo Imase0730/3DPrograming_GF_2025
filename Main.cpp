@@ -181,29 +181,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
 
-    case WM_SIZE:
-        if (wParam == SIZE_MINIMIZED)
-        {
-            if (!s_minimized)
-            {
-                s_minimized = true;
-                if (!s_in_suspend && game)
-                    game->OnSuspending();
-                s_in_suspend = true;
-            }
-        }
-        else if (s_minimized)
-        {
-            s_minimized = false;
-            if (s_in_suspend && game)
-                game->OnResuming();
-            s_in_suspend = false;
-        }
-        else if (!s_in_sizemove && game)
-        {
-            game->OnWindowSizeChanged(LOWORD(lParam), HIWORD(lParam));
-        }
-        break;
+    //case WM_SIZE:
+    //    if (wParam == SIZE_MINIMIZED)
+    //    {
+    //        if (!s_minimized)
+    //        {
+    //            s_minimized = true;
+    //            if (!s_in_suspend && game)
+    //                game->OnSuspending();
+    //            s_in_suspend = true;
+    //        }
+    //    }
+    //    else if (s_minimized)
+    //    {
+    //        s_minimized = false;
+    //        if (s_in_suspend && game)
+    //            game->OnResuming();
+    //        s_in_suspend = false;
+    //    }
+    //    else if (!s_in_sizemove && game)
+    //    {
+    //        game->OnWindowSizeChanged(LOWORD(lParam), HIWORD(lParam));
+    //    }
+    //    break;
 
     case WM_ENTERSIZEMOVE:
         s_in_sizemove = true;
@@ -280,17 +280,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             // Implements the classic ALT+ENTER fullscreen toggle
             if (s_fullscreen)
             {
-                SetWindowLongPtr(hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+                SetWindowLongPtr(hWnd, GWL_STYLE, WS_MYSTYLE);
                 SetWindowLongPtr(hWnd, GWL_EXSTYLE, 0);
 
-                int width = 800;
-                int height = 600;
+                int width = 1280;
+                int height = 720;
                 if (game)
                     game->GetDefaultSize(width, height);
 
                 ShowWindow(hWnd, SW_SHOWNORMAL);
 
-                SetWindowPos(hWnd, HWND_TOP, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
+                RECT rc{};
+                AdjustWindowRect(&rc, WS_MYSTYLE, FALSE);
+
+                SetWindowPos( hWnd, HWND_TOP,
+                              0, 0, width + rc.right - rc.left, height + rc.bottom - rc.top,
+                              SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED );
             }
             else
             {
