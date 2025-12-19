@@ -18,6 +18,9 @@ Game::Game() noexcept(false)
     , m_specularPower{}
     , m_diffuseColor{}
     , m_emissiveColor{}
+    , m_ballModel{}
+    , m_floorModel{}
+    , m_ballPosition{}
 {
     m_deviceResources = std::make_unique<DX::DeviceResources>();
     // TODO: Provide parameters for swapchain format, depth/stencil format, and backbuffer count.
@@ -73,6 +76,9 @@ void Game::Initialize(HWND window, int width, int height)
 
     // スペキュラーパワーの初期設定
     m_specularPower = 80.0f;
+
+    // ボール位置の初期化
+    m_ballPosition = SimpleMath::Vector3(0.0f, 0.5f, 0.0f);
 }
 
 #pragma region Frame Update
@@ -107,50 +113,50 @@ void Game::Update(DX::StepTimer const& timer)
 
     // ----- ImGuiのウインドウに項目を追加する ----- //
 
-    std::vector<float> v;
+    //std::vector<float> v;
 
-    ImGui::SeparatorText("LIGHT SETTING:");
+    //ImGui::SeparatorText("LIGHT SETTING:");
 
-    // ライトの向き
-    v = { m_lightDirection.x, m_lightDirection.y, m_lightDirection.z };
-    ImGui::DragFloat3("LightDirection", v.data(), 0.01f);
-    m_lightDirection = { v[0], v[1], v[2] };
-    m_lightDirection.Normalize();
+    //// ライトの向き
+    //v = { m_lightDirection.x, m_lightDirection.y, m_lightDirection.z };
+    //ImGui::DragFloat3("LightDirection", v.data(), 0.01f);
+    //m_lightDirection = { v[0], v[1], v[2] };
+    //m_lightDirection.Normalize();
 
-    // アンビエントライト色
-    v = { m_ambientLightColor.x, m_ambientLightColor.y, m_ambientLightColor.z };
-    ImGui::ColorEdit3("AmbientLightColor", v.data());
-    m_ambientLightColor = { v[0], v[1], v[2] };
+    //// アンビエントライト色
+    //v = { m_ambientLightColor.x, m_ambientLightColor.y, m_ambientLightColor.z };
+    //ImGui::ColorEdit3("AmbientLightColor", v.data());
+    //m_ambientLightColor = { v[0], v[1], v[2] };
 
-    // ライトのディフューズ色
-    v = { m_lightDiffuseColor.x, m_lightDiffuseColor.y, m_lightDiffuseColor.z };
-    ImGui::ColorEdit3("LightDiffuseColor", v.data());
-    m_lightDiffuseColor = { v[0], v[1], v[2] };
+    //// ライトのディフューズ色
+    //v = { m_lightDiffuseColor.x, m_lightDiffuseColor.y, m_lightDiffuseColor.z };
+    //ImGui::ColorEdit3("LightDiffuseColor", v.data());
+    //m_lightDiffuseColor = { v[0], v[1], v[2] };
 
-    // ライトのスペキュラー色
-    v = { m_lightSpecularColor.x, m_lightSpecularColor.y, m_lightSpecularColor.z };
-    ImGui::ColorEdit3("LightSpecularColor", v.data());
-    m_lightSpecularColor = { v[0], v[1], v[2] };
+    //// ライトのスペキュラー色
+    //v = { m_lightSpecularColor.x, m_lightSpecularColor.y, m_lightSpecularColor.z };
+    //ImGui::ColorEdit3("LightSpecularColor", v.data());
+    //m_lightSpecularColor = { v[0], v[1], v[2] };
 
-    ImGui::SeparatorText("MATERIAL SETTING:");
+    //ImGui::SeparatorText("MATERIAL SETTING:");
 
-    // ディフューズ色
-    v = { m_diffuseColor.x, m_diffuseColor.y, m_diffuseColor.z };
-    ImGui::ColorEdit3("DiffuseColor", v.data());
-    m_diffuseColor = { v[0], v[1], v[2] };
+    //// ディフューズ色
+    //v = { m_diffuseColor.x, m_diffuseColor.y, m_diffuseColor.z };
+    //ImGui::ColorEdit3("DiffuseColor", v.data());
+    //m_diffuseColor = { v[0], v[1], v[2] };
 
-    // スペキュラー色
-    v = { m_specularColor.x, m_specularColor.y, m_specularColor.z };
-    ImGui::ColorEdit3("SpecularColor", v.data());
-    m_specularColor = { v[0], v[1], v[2] };
+    //// スペキュラー色
+    //v = { m_specularColor.x, m_specularColor.y, m_specularColor.z };
+    //ImGui::ColorEdit3("SpecularColor", v.data());
+    //m_specularColor = { v[0], v[1], v[2] };
 
-    // スペキュラーパワー
-    ImGui::DragFloat("SpecuarPower", &m_specularPower, 1.0f, 10.0f, 100.0f);
+    //// スペキュラーパワー
+    //ImGui::DragFloat("SpecuarPower", &m_specularPower, 1.0f, 10.0f, 100.0f);
 
-    // エミッシブ色
-    v = { m_emissiveColor.x, m_emissiveColor.y, m_emissiveColor.z };
-    ImGui::ColorEdit3("EmissiveColor", v.data());
-    m_emissiveColor = { v[0], v[1], v[2] };
+    //// エミッシブ色
+    //v = { m_emissiveColor.x, m_emissiveColor.y, m_emissiveColor.z };
+    //ImGui::ColorEdit3("EmissiveColor", v.data());
+    //m_emissiveColor = { v[0], v[1], v[2] };
 
     // --------------------------------------------- //
 
@@ -193,69 +199,23 @@ void Game::Render()
     SimpleMath::Matrix view = m_debugCamera->GetCameraMatrix();
 
     // グリッドの床の描画
-    m_gridFloor->Render(context, view, m_proj);
-
-    // ----- ティーポットの描画 ----- //
+    //m_gridFloor->Render(context, view, m_proj);
 
     SimpleMath::Matrix world;
 
-    // ティーポットを少し上へ移動する
-    world = SimpleMath::Matrix::CreateTranslation(0.0f, 0.7f, 0.0f);
-
-    // ワールド行列を設定
-    m_basicEffect->SetWorld(world);
-    // ビュー行列を設定
-    m_basicEffect->SetView(view);
-    // 射影行列を設定
-    m_basicEffect->SetProjection(m_proj);
-
-    // ----- 環境光の設定 ----- //
-
-    // アンビエント色の設定
-    m_basicEffect->SetAmbientLightColor(m_ambientLightColor);
-   
-    // ----- ライトの設定 ----- //
-
-    // ライトをON
-    m_basicEffect->SetLightEnabled(0, true);
-    // ディフューズ色を設定する
-    m_basicEffect->SetLightDiffuseColor(0, m_lightDiffuseColor);
-    // スペキュラ色を設定する
-    m_basicEffect->SetLightSpecularColor(0, m_lightSpecularColor);
-    // ライトの向きを設定する
-    m_basicEffect->SetLightDirection(0, m_lightDirection);
-
-    // 他のライトはOFF
-    m_basicEffect->SetLightEnabled(1, false);
-    m_basicEffect->SetLightEnabled(2, false);
-
-    // ----- ティーポットのマテリアルの設定 ----- //
-
-    // ディフューズ色を設定する
-    m_basicEffect->SetDiffuseColor(m_diffuseColor);
-    // スペキュラ色を設定する
-    m_basicEffect->SetSpecularColor(m_specularColor);
-    // スペキュラパワーを設定する
-    m_basicEffect->SetSpecularPower(m_specularPower);
-    // エミッシブ色を設定する
-    m_basicEffect->SetEmissiveColor(m_emissiveColor);
-
-    // ティーポットを描画する
-    //m_teapot->Draw(m_basicEffect.get(), m_inputLayout.Get());
-
-    // モデルのエフェクトを更新する
-    m_model->UpdateEffects([&](IEffect* effect)
+    // モデルを描画する（床）
+    world = SimpleMath::Matrix::Identity;
+    m_floorModel->Draw(context, *m_states, world, view, m_proj, false, [&]()
         {
-            IEffectLights* lights = dynamic_cast<IEffectLights*>(effect);
-            if (lights)
-            {
-                lights->SetLightDiffuseColor(0, m_lightDiffuseColor);
-            }
+            // テクスチャサンプラーの設定
+            ID3D11SamplerState* samplers[] = { m_states->PointWrap() };
+            context->PSSetSamplers(0, 1, samplers);
         }
     );
 
-    // モデルを描画する
-    m_model->Draw(context, *m_states, world, view, m_proj);
+    // モデルを描画する（ボール）
+    world = SimpleMath::Matrix::CreateTranslation(m_ballPosition);
+    m_ballModel->Draw(context, *m_states, world, view, m_proj);
 
     // デバッグフォントの描画
     m_debugFont->Render(m_states.get());
@@ -402,12 +362,26 @@ void Game::CreateDeviceDependentResources()
             device, m_basicEffect.get(), m_inputLayout.ReleaseAndGetAddressOf())
     );
 
-    // ティーポットのモデルを作成する
-    m_teapot = GeometricPrimitive::CreateTeapot(context, 2.0f);
-
-    // モデルの読み込み
     EffectFactory fx(device);
-    m_model = Model::CreateFromCMO(device, L"Resources/Models/Monkey.cmo", fx);
+    fx.SetDirectory(L"Resources/Models");
+
+    // モデルの読み込み（ボール）
+    m_ballModel = Model::CreateFromCMO(device, L"Resources/Models/Ball.cmo", fx);
+
+    // モデルの読み込み（床）
+    m_floorModel = Model::CreateFromCMO(device, L"Resources/Models/Floor.cmo", fx);
+
+    // ボールのエフェクトを更新する
+    m_ballModel->UpdateEffects([&](IEffect* effect)
+        {
+            IEffectLights* lights = dynamic_cast<IEffectLights*>(effect);
+            if (lights)
+            {
+                // ピクセルシェーダーでライトの計算を行う
+                lights->SetPerPixelLighting(true);
+            }
+        }
+    );
 
 }
 

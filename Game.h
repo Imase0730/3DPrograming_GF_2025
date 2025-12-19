@@ -92,9 +92,6 @@ private:
     // 入力レイアウト
     Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
 
-    // ティーポットのモデル
-    std::unique_ptr<DirectX::GeometricPrimitive> m_teapot;
-
     // ライトの方向ベクトル
     DirectX::SimpleMath::Vector3 m_lightDirection;
 
@@ -119,7 +116,13 @@ private:
     // エミッシブ色
     DirectX::SimpleMath::Color m_emissiveColor;
 
-    // モデル
-    std::unique_ptr<DirectX::Model> m_model;
+    // モデル（ボール）
+    std::unique_ptr<DirectX::Model> m_ballModel;
+
+    // モデル（床）
+    std::unique_ptr<DirectX::Model> m_floorModel;
+
+    // ボールの位置
+    DirectX::SimpleMath::Vector3 m_ballPosition;
 
 };
