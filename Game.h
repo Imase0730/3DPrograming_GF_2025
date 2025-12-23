@@ -125,4 +125,7 @@ private:
     // ボールの位置
     DirectX::SimpleMath::Vector3 m_ballPosition;
 
+    // モデル（影）
+    std::unique_ptr<DirectX::Model> m_shadowModel;
+
 };

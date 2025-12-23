@@ -174,6 +174,9 @@ void Game::Update(DX::StepTimer const& timer)
 
 #endif // _DEBUG
 
+    // ボールを上下に揺らす（sin関数を使用）
+    m_ballPosition.y = 0.5f + (sinf(timer.GetTotalSeconds()) + 1.0f) * 0.5f;
+
 }
 #pragma endregion
 
@@ -212,6 +215,37 @@ void Game::Render()
             context->PSSetSamplers(0, 1, samplers);
         }
     );
+    
+    // ----- 丸影の描画 ----- //
+    
+    // 高さによって影の大きさを調整する
+    float rate = std::min(std::max(1.0f - (m_ballPosition.y - 0.5f), 0.0f), 1.0f) * 0.5f + 0.5f;
+
+    // ワールド行列の作成
+    world = SimpleMath::Matrix::CreateScale(rate)
+          * SimpleMath::Matrix::CreateTranslation(m_ballPosition.x, 0.01f, m_ballPosition.z);
+
+    // 高さによって影の薄さを調整する
+    m_shadowModel->UpdateEffects([&](IEffect* effect)
+        {
+            BasicEffect* basicEffect = dynamic_cast<BasicEffect*>(effect);
+            if (basicEffect)
+            {
+                // 半透明度を設定する
+                basicEffect->SetColorAndAlpha(SimpleMath::Color(1.0f, 1.0f, 1.0f, rate));
+            }
+        }
+    );
+
+    // モデルを描画する（影）
+    m_shadowModel->Draw(context, *m_states, world, view, m_proj, false, [&]()
+        {
+            // 半透明の設定（ストレートアルファ）
+            context->OMSetBlendState(m_states->NonPremultiplied(), nullptr, 0xffffffff);
+        }
+    );
+
+    // ---------------------- //
 
     // モデルを描画する（ボール）
     world = SimpleMath::Matrix::CreateTranslation(m_ballPosition);
@@ -382,6 +416,9 @@ void Game::CreateDeviceDependentResources()
             }
         }
     );
+
+    // モデルの読み込み（影）
+    m_shadowModel = Model::CreateFromCMO(device, L"Resources/Models/Shadow.cmo", fx);
 
 }
 

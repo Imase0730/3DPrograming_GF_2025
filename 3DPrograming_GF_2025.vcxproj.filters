@@ -140,5 +140,8 @@
     <MeshContentTask Include="Models\Ball.obj">
       <Filter>Models</Filter>
     </MeshContentTask>
+    <MeshContentTask Include="Models\Shadow.obj">
+      <Filter>Models</Filter>
+    </MeshContentTask>
   </ItemGroup>
 </Project>

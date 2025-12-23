@@ -295,6 +295,7 @@
   <ItemGroup>
     <MeshContentTask Include="Models\Ball.obj" />
     <MeshContentTask Include="Models\Floor.obj" />
+    <MeshContentTask Include="Models\Shadow.obj" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
