@@ -175,7 +175,7 @@ void Game::Update(DX::StepTimer const& timer)
 #endif // _DEBUG
 
     // ボールを上下に揺らす（sin関数を使用）
-    m_ballPosition.y = 0.5f + (sinf(timer.GetTotalSeconds()) + 1.0f) * 0.5f;
+    m_ballPosition.y = (sinf(timer.GetTotalSeconds()) + 1.0f) * 0.5f;
 
 }
 #pragma endregion
@@ -219,7 +219,7 @@ void Game::Render()
     // ----- 丸影の描画 ----- //
     
     // 高さによって影の大きさを調整する
-    float rate = std::min(std::max(1.0f - (m_ballPosition.y - 0.5f), 0.0f), 1.0f) * 0.5f + 0.5f;
+    float rate = std::min(std::max(1.0f - m_ballPosition.y, 0.0f), 1.0f) * 0.5f + 0.5f;
 
     // ワールド行列の作成
     world = SimpleMath::Matrix::CreateScale(rate)
@@ -249,7 +249,17 @@ void Game::Render()
 
     // モデルを描画する（ボール）
     world = SimpleMath::Matrix::CreateTranslation(m_ballPosition);
-    m_ballModel->Draw(context, *m_states, world, view, m_proj);
+
+    // ビルボード用の行列を作成する
+    world = SimpleMath::Matrix::CreateBillboard( m_ballPosition
+                    , m_debugCamera->GetEyePosition(), SimpleMath::Vector3::Up);
+
+    m_ballModel->Draw(context, *m_states, world, view, m_proj, false, [&]()
+        {
+            // 半透明の設定（ストレートアルファ）
+            context->OMSetBlendState(m_states->NonPremultiplied(), nullptr, 0xffffffff);
+        }
+    );
 
     // デバッグフォントの描画
     m_debugFont->Render(m_states.get());
@@ -408,11 +418,15 @@ void Game::CreateDeviceDependentResources()
     // ボールのエフェクトを更新する
     m_ballModel->UpdateEffects([&](IEffect* effect)
         {
-            IEffectLights* lights = dynamic_cast<IEffectLights*>(effect);
-            if (lights)
+            BasicEffect* basicEffect = dynamic_cast<BasicEffect*>(effect);
+            if (basicEffect)
             {
-                // ピクセルシェーダーでライトの計算を行う
-                lights->SetPerPixelLighting(true);
+                // 全てのライトをOFFにする
+                basicEffect->SetLightEnabled(0, false);
+                basicEffect->SetLightEnabled(1, false);
+                basicEffect->SetLightEnabled(2, false);
+                // 自己発光させる
+                basicEffect->SetEmissiveColor(Colors::White);
             }
         }
     );
