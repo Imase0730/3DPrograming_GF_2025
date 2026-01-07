@@ -137,10 +137,10 @@
     <MeshContentTask Include="Models\Floor.obj">
       <Filter>Models</Filter>
     </MeshContentTask>
-    <MeshContentTask Include="Models\Ball.obj">
+    <MeshContentTask Include="Models\Shadow.obj">
       <Filter>Models</Filter>
     </MeshContentTask>
-    <MeshContentTask Include="Models\Shadow.obj">
+    <MeshContentTask Include="Models\Tree.obj">
       <Filter>Models</Filter>
     </MeshContentTask>
   </ItemGroup>

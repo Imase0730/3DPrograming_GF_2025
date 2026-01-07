@@ -20,7 +20,8 @@ Game::Game() noexcept(false)
     , m_emissiveColor{}
     , m_ballModel{}
     , m_floorModel{}
-    , m_ballPosition{}
+    , m_shadowModel{}
+    , m_treeModel{}
 {
     m_deviceResources = std::make_unique<DX::DeviceResources>();
     // TODO: Provide parameters for swapchain format, depth/stencil format, and backbuffer count.
@@ -77,8 +78,6 @@ void Game::Initialize(HWND window, int width, int height)
     // スペキュラーパワーの初期設定
     m_specularPower = 80.0f;
 
-    // ボール位置の初期化
-    m_ballPosition = SimpleMath::Vector3(0.0f, 0.5f, 0.0f);
 }
 
 #pragma region Frame Update
@@ -174,9 +173,6 @@ void Game::Update(DX::StepTimer const& timer)
 
 #endif // _DEBUG
 
-    // ボールを上下に揺らす（sin関数を使用）
-    m_ballPosition.y = (sinf(timer.GetTotalSeconds()) + 1.0f) * 0.5f;
-
 }
 #pragma endregion
 
@@ -216,50 +212,8 @@ void Game::Render()
         }
     );
     
-    // ----- 丸影の描画 ----- //
-    
-    // 高さによって影の大きさを調整する
-    float rate = std::min(std::max(1.0f - m_ballPosition.y, 0.0f), 1.0f) * 0.5f + 0.5f;
-
-    // ワールド行列の作成
-    world = SimpleMath::Matrix::CreateScale(rate)
-          * SimpleMath::Matrix::CreateTranslation(m_ballPosition.x, 0.01f, m_ballPosition.z);
-
-    // 高さによって影の薄さを調整する
-    m_shadowModel->UpdateEffects([&](IEffect* effect)
-        {
-            BasicEffect* basicEffect = dynamic_cast<BasicEffect*>(effect);
-            if (basicEffect)
-            {
-                // 半透明度を設定する
-                basicEffect->SetColorAndAlpha(SimpleMath::Color(1.0f, 1.0f, 1.0f, rate));
-            }
-        }
-    );
-
-    // モデルを描画する（影）
-    m_shadowModel->Draw(context, *m_states, world, view, m_proj, false, [&]()
-        {
-            // 半透明の設定（ストレートアルファ）
-            context->OMSetBlendState(m_states->NonPremultiplied(), nullptr, 0xffffffff);
-        }
-    );
-
-    // ---------------------- //
-
-    // モデルを描画する（ボール）
-    world = SimpleMath::Matrix::CreateTranslation(m_ballPosition);
-
-    // ビルボード用の行列を作成する
-    world = SimpleMath::Matrix::CreateBillboard( m_ballPosition
-                    , m_debugCamera->GetEyePosition(), SimpleMath::Vector3::Up);
-
-    m_ballModel->Draw(context, *m_states, world, view, m_proj, false, [&]()
-        {
-            // 半透明の設定（ストレートアルファ）
-            context->OMSetBlendState(m_states->NonPremultiplied(), nullptr, 0xffffffff);
-        }
-    );
+    // 木を描画する関数
+    DrawTree(SimpleMath::Vector3(0.0f, 0.0f, 0.0f));
 
     // デバッグフォントの描画
     m_debugFont->Render(m_states.get());
@@ -409,30 +363,30 @@ void Game::CreateDeviceDependentResources()
     EffectFactory fx(device);
     fx.SetDirectory(L"Resources/Models");
 
-    // モデルの読み込み（ボール）
-    m_ballModel = Model::CreateFromCMO(device, L"Resources/Models/Ball.cmo", fx);
-
     // モデルの読み込み（床）
     m_floorModel = Model::CreateFromCMO(device, L"Resources/Models/Floor.cmo", fx);
 
-    // ボールのエフェクトを更新する
-    m_ballModel->UpdateEffects([&](IEffect* effect)
+    // モデルの読み込み（影）
+    m_shadowModel = Model::CreateFromCMO(device, L"Resources/Models/Shadow.cmo", fx);
+
+    // モデルの読み込み（木）
+    m_treeModel = Model::CreateFromCMO(device, L"Resources/Models/Tree.cmo", fx);
+
+    // ビルボードのライトの影響をなくす
+    m_treeModel->UpdateEffects([&](IEffect* effect)
         {
             BasicEffect* basicEffect = dynamic_cast<BasicEffect*>(effect);
             if (basicEffect)
             {
-                // 全てのライトをOFFにする
+                // ライトを切る
                 basicEffect->SetLightEnabled(0, false);
                 basicEffect->SetLightEnabled(1, false);
                 basicEffect->SetLightEnabled(2, false);
-                // 自己発光させる
+                // 自己発光する
                 basicEffect->SetEmissiveColor(Colors::White);
             }
         }
     );
-
-    // モデルの読み込み（影）
-    m_shadowModel = Model::CreateFromCMO(device, L"Resources/Models/Shadow.cmo", fx);
 
 }
 
@@ -451,6 +405,48 @@ void Game::CreateWindowSizeDependentResources()
         XMConvertToRadians(45.0f), static_cast<float>(w) / static_cast<float>(h),
         // Near Far
         0.1f, 100.0f);
+
+}
+
+// 木を描画する関数
+void Game::DrawTree(DirectX::SimpleMath::Vector3 position)
+{
+    auto context = m_deviceResources->GetD3DDeviceContext();
+
+    SimpleMath::Matrix world;
+
+    // ビュー行列を取得する
+    SimpleMath::Matrix view = m_debugCamera->GetCameraMatrix();
+
+    // ----- 丸影の描画 ----- //
+
+    // ワールド行列の作成（Y座標はZファイティング対策のため0.01上に上げている）
+    world = SimpleMath::Matrix::CreateTranslation(position.x, position.y + 0.01f, position.z);
+
+    // モデルを描画する（影）
+    m_shadowModel->Draw(context, *m_states, world, view, m_proj, false, [&]()
+        {
+            // 半透明の設定（ストレートアルファ）
+            context->OMSetBlendState(m_states->NonPremultiplied(), nullptr, 0xffffffff);
+            // 深度ステンシルステートの設定
+            context->OMSetDepthStencilState(m_states->DepthRead(), 0);
+        }
+    );
+
+    // ----- ビルボードの木を描画する ----- //
+
+    // ビルボード用の行列を作成する
+    world = SimpleMath::Matrix::CreateConstrainedBillboard(position
+        , m_debugCamera->GetEyePosition(), SimpleMath::Vector3::Up);
+
+    m_treeModel->Draw(context, *m_states, world, view, m_proj, false, [&]()
+        {
+            // 半透明の設定（ストレートアルファ）
+            context->OMSetBlendState(m_states->NonPremultiplied(), nullptr, 0xffffffff);
+            // 深度ステンシルステートの設定
+            context->OMSetDepthStencilState(m_states->DepthRead(), 0);
+        }
+    );
 
 }
 

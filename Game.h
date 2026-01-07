@@ -122,10 +122,13 @@ private:
     // モデル（床）
     std::unique_ptr<DirectX::Model> m_floorModel;
 
-    // ボールの位置
-    DirectX::SimpleMath::Vector3 m_ballPosition;
-
     // モデル（影）
     std::unique_ptr<DirectX::Model> m_shadowModel;
+
+    // モデル（木）
+    std::unique_ptr<DirectX::Model> m_treeModel;
+
+    // 木を描画する関数
+    void DrawTree(DirectX::SimpleMath::Vector3 position);
 
 };
