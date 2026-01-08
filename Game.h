@@ -13,6 +13,16 @@
 #include "ImaseLib/DebugCamera.h"
 #include "ImaseLib/GridFloor.h"
 
+// 木の構造体
+struct Tree
+{
+    // 位置
+    DirectX::SimpleMath::Vector3 position;
+
+    // カメラからの距離
+    float distance;
+};
+
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.
 class Game final : public DX::IDeviceNotify
@@ -130,5 +140,24 @@ private:
 
     // 木を描画する関数
     void DrawTree(DirectX::SimpleMath::Vector3 position);
+
+    // 木のデータの配列
+    std::vector<Tree> m_trees;
+
+    // 床の上の木の数（行）
+    static constexpr int TREE_ROW = 9;
+
+    // 床の上の木の数（列）
+    static constexpr int TREE_COLUMN = 9;
+
+    // 指定数の木の位置を初期化する関数
+    void InitTreesPosition(int count);
+
+    // 木とカメラの距離を更新する関数
+    void UpdateDistance( std::vector<Tree>& trees,
+                         DirectX::SimpleMath::Vector3 cameraPosition );
+
+    // カメラからの距離でソートする関数
+    void ZSort();
 
 };

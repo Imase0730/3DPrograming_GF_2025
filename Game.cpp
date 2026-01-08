@@ -5,6 +5,9 @@
 #include "pch.h"
 #include "Game.h"
 
+#include <algorithm>
+#include <random>
+
 extern void ExitGame() noexcept;
 
 using namespace DirectX;
@@ -22,6 +25,7 @@ Game::Game() noexcept(false)
     , m_floorModel{}
     , m_shadowModel{}
     , m_treeModel{}
+    , m_trees{}
 {
     m_deviceResources = std::make_unique<DX::DeviceResources>();
     // TODO: Provide parameters for swapchain format, depth/stencil format, and backbuffer count.
@@ -77,6 +81,9 @@ void Game::Initialize(HWND window, int width, int height)
 
     // スペキュラーパワーの初期設定
     m_specularPower = 80.0f;
+
+    // 指定数の木の位置を初期化する関数
+    InitTreesPosition(50);
 
 }
 
@@ -211,10 +218,19 @@ void Game::Render()
             context->PSSetSamplers(0, 1, samplers);
         }
     );
-    
-    // 木を描画する関数
-    DrawTree(SimpleMath::Vector3(0.0f, 0.0f, 0.0f));
 
+    // 木とカメラの距離を更新する関数
+    UpdateDistance(m_trees, m_debugCamera->GetEyePosition());
+
+    // カメラからの距離でソートする関数
+    ZSort();
+
+    for (size_t i = 0; i < m_trees.size(); i++)
+    {
+        // 木を描画する関数
+        DrawTree(m_trees[i].position);
+    }
+ 
     // デバッグフォントの描画
     m_debugFont->Render(m_states.get());
 
@@ -415,35 +431,101 @@ void Game::DrawTree(DirectX::SimpleMath::Vector3 position)
 
     SimpleMath::Matrix world;
 
+    // ２倍の大きさにする行列を作成する
+    SimpleMath::Matrix scale = SimpleMath::Matrix::CreateScale(2.0f);
+
     // ビュー行列を取得する
     SimpleMath::Matrix view = m_debugCamera->GetCameraMatrix();
 
     // ----- 丸影の描画 ----- //
 
     // ワールド行列の作成（Y座標はZファイティング対策のため0.01上に上げている）
-    world = SimpleMath::Matrix::CreateTranslation(position.x, position.y + 0.01f, position.z);
+    world = scale * SimpleMath::Matrix::CreateTranslation(position.x, position.y + 0.01f, position.z);
 
     // モデルを描画する（影）
     m_shadowModel->Draw(context, *m_states, world, view, m_proj, false, [&]()
         {
             // 半透明の設定（ストレートアルファ）
             context->OMSetBlendState(m_states->NonPremultiplied(), nullptr, 0xffffffff);
+            // 深度ステンシルステートの設定
+            context->OMSetDepthStencilState(m_states->DepthRead(), 0);
         }
     );
 
     // ----- ビルボードの木を描画する ----- //
 
     // ビルボード用の行列を作成する
-    world = SimpleMath::Matrix::CreateConstrainedBillboard(position
+    world = scale * SimpleMath::Matrix::CreateConstrainedBillboard(position
         , m_debugCamera->GetEyePosition(), SimpleMath::Vector3::Up);
 
     m_treeModel->Draw(context, *m_states, world, view, m_proj, false, [&]()
         {
             // 半透明の設定（ストレートアルファ）
             context->OMSetBlendState(m_states->NonPremultiplied(), nullptr, 0xffffffff);
+            // 深度ステンシルステートの設定
+            context->OMSetDepthStencilState(m_states->DepthRead(), 0);
         }
     );
 
+}
+
+// 指定数の木の位置を初期化する関数
+void Game::InitTreesPosition(int count)
+{
+    // 全ての木の位置を保存しておく一時的な配列
+    std::vector<SimpleMath::Vector3> all;
+
+    // 全ての木の位置を作成する
+    for (int i = 0; i < TREE_ROW; i++)
+    {
+        for (int j = 0; j < TREE_COLUMN; j++)
+        {
+            SimpleMath::Vector3 v = {
+                static_cast<float>(j - (TREE_COLUMN / 2)),
+                0.0f,
+                static_cast<float>(i - (TREE_ROW / 2)),
+            };
+            all.push_back(v);
+        }
+    }
+
+    // シャッフルする
+    std::random_device rd;
+    std::mt19937 mt(rd());
+    std::shuffle(all.begin(), all.end(), mt);
+
+    // 指定数の数は大きい場合は調整する
+    if (count > all.size()) count = all.size();
+
+    // 指定数分要素をコピーする
+    for (int i = 0; i < count; i++)
+    {
+        Tree tree = {};
+        tree.position = all[i];
+        m_trees.push_back(tree);
+    }
+
+}
+
+// 木とカメラの距離を更新する関数
+void Game::UpdateDistance(std::vector<Tree>& trees, DirectX::SimpleMath::Vector3 cameraPosition)
+{
+    for (Tree& tree : trees)
+    {
+        SimpleMath::Vector3 diff = tree.position - cameraPosition;
+        tree.distance = diff.LengthSquared();
+    }
+}
+
+// カメラからの距離でソートする関数
+void Game::ZSort()
+{
+    std::sort(m_trees.begin(), m_trees.end(), [](const Tree& a, const Tree& b)
+        {
+            // カメラからの距離が遠い物から描画する
+            return a.distance > b.distance;
+        }
+    );
 }
 
 void Game::OnDeviceLost()
@@ -458,3 +540,4 @@ void Game::OnDeviceRestored()
     CreateWindowSizeDependentResources();
 }
 #pragma endregion
+
