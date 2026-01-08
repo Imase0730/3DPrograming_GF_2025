@@ -428,8 +428,6 @@ void Game::DrawTree(DirectX::SimpleMath::Vector3 position)
         {
             // 半透明の設定（ストレートアルファ）
             context->OMSetBlendState(m_states->NonPremultiplied(), nullptr, 0xffffffff);
-            // 深度ステンシルステートの設定
-            context->OMSetDepthStencilState(m_states->DepthRead(), 0);
         }
     );
 
@@ -443,8 +441,6 @@ void Game::DrawTree(DirectX::SimpleMath::Vector3 position)
         {
             // 半透明の設定（ストレートアルファ）
             context->OMSetBlendState(m_states->NonPremultiplied(), nullptr, 0xffffffff);
-            // 深度ステンシルステートの設定
-            context->OMSetDepthStencilState(m_states->DepthRead(), 0);
         }
     );
 
